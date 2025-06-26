@@ -1,45 +1,19 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
- * Driver for Novatek NT11205 i2c touchscreen controller as found
- * on the Acer Iconia One 7 B1-750 tablet.
+ * Driver for Novatek touchscreen controller.
  *
  * Copyright (c) 2023 Hans de Goede <hdegoede@redhat.com>
  */
 
 #include <linux/delay.h>
 #include <linux/gpio/consumer.h>
-#include <linux/interrupt.h>
-#include <linux/i2c.h>
-#include <linux/input.h>
 #include <linux/input/mt.h>
-#include <linux/input/touchscreen.h>
+#include <linux/interrupt.h>
 #include <linux/module.h>
-
+#include <linux/property.h>
 #include <linux/unaligned.h>
 
-#define NVT_TS_TOUCH_START		0x00
-#define NVT_TS_TOUCH_SIZE		6
-
-#define NVT_TS_PARAMETERS_START		0x78
-/* These are offsets from NVT_TS_PARAMETERS_START */
-#define NVT_TS_PARAMS_WIDTH		0x04
-#define NVT_TS_PARAMS_HEIGHT		0x06
-#define NVT_TS_PARAMS_MAX_TOUCH		0x09
-#define NVT_TS_PARAMS_MAX_BUTTONS	0x0a
-#define NVT_TS_PARAMS_IRQ_TYPE		0x0b
-#define NVT_TS_PARAMS_WAKE_TYPE		0x0c
-#define NVT_TS_PARAMS_CHIP_ID		0x0e
-#define NVT_TS_PARAMS_SIZE		0x0f
-
-#define NVT_TS_MAX_TOUCHES		10
-#define NVT_TS_MAX_SIZE			4096
-
-#define NVT_TS_TOUCH_INVALID		0xff
-#define NVT_TS_TOUCH_SLOT_SHIFT		3
-#define NVT_TS_TOUCH_TYPE_MASK		GENMASK(2, 0)
-#define NVT_TS_TOUCH_NEW		1
-#define NVT_TS_TOUCH_UPDATE		2
-#define NVT_TS_TOUCH_RELEASE		3
+#include "novatek-nvt-ts.h"
 
 static const int nvt_ts_irq_type[4] = {
 	IRQF_TRIGGER_RISING,
@@ -48,57 +22,16 @@ static const int nvt_ts_irq_type[4] = {
 	IRQF_TRIGGER_HIGH
 };
 
-struct nvt_ts_i2c_chip_data {
-	u8 wake_type;
-	u8 chip_id;
-};
-
-struct nvt_ts_data {
-	struct i2c_client *client;
-	struct input_dev *input;
-	struct gpio_desc *reset_gpio;
-	struct regulator_bulk_data regulators[2];
-	struct touchscreen_properties prop;
-	int max_touches;
-	u8 buf[NVT_TS_TOUCH_SIZE * NVT_TS_MAX_TOUCHES];
-};
-
-static int nvt_ts_read_data(struct i2c_client *client, u8 reg, u8 *data, int count)
-{
-	struct i2c_msg msg[2] = {
-		{
-			.addr = client->addr,
-			.len = 1,
-			.buf = &reg,
-		},
-		{
-			.addr = client->addr,
-			.flags = I2C_M_RD,
-			.len = count,
-			.buf = data,
-		}
-	};
-	int ret;
-
-	ret = i2c_transfer(client->adapter, msg, ARRAY_SIZE(msg));
-	if (ret != ARRAY_SIZE(msg)) {
-		dev_err(&client->dev, "Error reading from 0x%02x: %d\n", reg, ret);
-		return (ret < 0) ? ret : -EIO;
-	}
-
-	return 0;
-}
-
 static irqreturn_t nvt_ts_irq(int irq, void *dev_id)
 {
 	struct nvt_ts_data *data = dev_id;
-	struct device *dev = &data->client->dev;
+	const struct device *dev = data->dev;
 	int i, error, slot, x, y;
 	bool active;
 	u8 *touch;
 
-	error = nvt_ts_read_data(data->client, NVT_TS_TOUCH_START, data->buf,
-				 data->max_touches * NVT_TS_TOUCH_SIZE);
+	error = regmap_raw_read(data->regmap, NVT_TS_TOUCH_START, data->buf,
+				data->max_touches * NVT_TS_TOUCH_SIZE);
 	if (error)
 		return IRQ_HANDLED;
 
@@ -149,11 +82,11 @@ static int nvt_ts_start(struct input_dev *dev)
 
 	error = regulator_bulk_enable(ARRAY_SIZE(data->regulators), data->regulators);
 	if (error) {
-		dev_err(&data->client->dev, "failed to enable regulators\n");
+		dev_err(data->dev, "failed to enable regulators\n");
 		return error;
 	}
 
-	enable_irq(data->client->irq);
+	enable_irq(data->irq);
 	gpiod_set_value_cansleep(data->reset_gpio, 0);
 
 	return 0;
@@ -163,14 +96,14 @@ static void nvt_ts_stop(struct input_dev *dev)
 {
 	struct nvt_ts_data *data = input_get_drvdata(dev);
 
-	disable_irq(data->client->irq);
+	disable_irq(data->irq);
 	gpiod_set_value_cansleep(data->reset_gpio, 1);
 	regulator_bulk_disable(ARRAY_SIZE(data->regulators), data->regulators);
 }
 
 static int nvt_ts_suspend(struct device *dev)
 {
-	struct nvt_ts_data *data = i2c_get_clientdata(to_i2c_client(dev));
+	const struct nvt_ts_data *data = dev_get_drvdata(dev);
 
 	mutex_lock(&data->input->mutex);
 	if (input_device_enabled(data->input))
@@ -182,7 +115,7 @@ static int nvt_ts_suspend(struct device *dev)
 
 static int nvt_ts_resume(struct device *dev)
 {
-	struct nvt_ts_data *data = i2c_get_clientdata(to_i2c_client(dev));
+	const struct nvt_ts_data *data = dev_get_drvdata(dev);
 
 	mutex_lock(&data->input->mutex);
 	if (input_device_enabled(data->input))
@@ -192,17 +125,17 @@ static int nvt_ts_resume(struct device *dev)
 	return 0;
 }
 
-static DEFINE_SIMPLE_DEV_PM_OPS(nvt_ts_pm_ops, nvt_ts_suspend, nvt_ts_resume);
+EXPORT_GPL_SIMPLE_DEV_PM_OPS(nvt_ts_pm_ops, nvt_ts_suspend, nvt_ts_resume);
 
-static int nvt_ts_probe(struct i2c_client *client)
+int nvt_ts_probe(struct device *dev, int irq, struct regmap *regmap,
+		 const struct input_id *id)
 {
-	struct device *dev = &client->dev;
 	int error, width, height, irq_type;
 	struct nvt_ts_data *data;
-	const struct nvt_ts_i2c_chip_data *chip;
+	const struct nvt_ts_chip_data *chip;
 	struct input_dev *input;
 
-	if (!client->irq) {
+	if (!irq) {
 		dev_err(dev, "Error no irq specified\n");
 		return -EINVAL;
 	}
@@ -211,12 +144,14 @@ static int nvt_ts_probe(struct i2c_client *client)
 	if (!data)
 		return -ENOMEM;
 
-	chip = device_get_match_data(&client->dev);
+	chip = device_get_match_data(dev);
 	if (!chip)
 		return -EINVAL;
 
-	data->client = client;
-	i2c_set_clientdata(client, data);
+	data->dev = dev;
+	data->regmap = regmap;
+	data->irq = irq;
+	dev_set_drvdata(dev, data);
 
 	/*
 	 * VCC is the analog voltage supply
@@ -246,8 +181,8 @@ static int nvt_ts_probe(struct i2c_client *client)
 
 	/* Wait for controller to come out of reset before params read */
 	msleep(100);
-	error = nvt_ts_read_data(data->client, NVT_TS_PARAMETERS_START,
-				 data->buf, NVT_TS_PARAMS_SIZE);
+	error = regmap_raw_read(data->regmap, NVT_TS_PARAMETERS_START,
+				data->buf, NVT_TS_PARAMS_SIZE);
 	gpiod_set_value_cansleep(data->reset_gpio, 1); /* Put back in reset */
 	regulator_bulk_disable(ARRAY_SIZE(data->regulators), data->regulators);
 	if (error)
@@ -278,8 +213,8 @@ static int nvt_ts_probe(struct i2c_client *client)
 	if (!input)
 		return -ENOMEM;
 
-	input->name = client->name;
-	input->id.bustype = BUS_I2C;
+	input->name = dev_name(dev);
+	input->id = *id;
 	input->open = nvt_ts_start;
 	input->close = nvt_ts_stop;
 
@@ -295,10 +230,10 @@ static int nvt_ts_probe(struct i2c_client *client)
 	data->input = input;
 	input_set_drvdata(input, data);
 
-	error = devm_request_threaded_irq(dev, client->irq, NULL, nvt_ts_irq,
+	error = devm_request_threaded_irq(dev, irq, NULL, nvt_ts_irq,
 					  IRQF_ONESHOT | IRQF_NO_AUTOEN |
 						nvt_ts_irq_type[irq_type],
-					  client->name, data);
+					  dev_name(dev), data);
 	if (error) {
 		dev_err(dev, "failed to request irq: %d\n", error);
 		return error;
@@ -312,43 +247,8 @@ static int nvt_ts_probe(struct i2c_client *client)
 
 	return 0;
 }
+EXPORT_SYMBOL_GPL(nvt_ts_probe);
 
-static const struct nvt_ts_i2c_chip_data nvt_nt11205_ts_data = {
-	.wake_type = 0x05,
-	.chip_id = 0x05,
-};
-
-static const struct nvt_ts_i2c_chip_data nvt_nt36672a_ts_data = {
-	.wake_type = 0x01,
-	.chip_id = 0x08,
-};
-
-static const struct of_device_id nvt_ts_of_match[] = {
-	{ .compatible = "novatek,nt11205-ts", .data = &nvt_nt11205_ts_data },
-	{ .compatible = "novatek,nt36672a-ts", .data = &nvt_nt36672a_ts_data },
-	{ }
-};
-MODULE_DEVICE_TABLE(of, nvt_ts_of_match);
-
-static const struct i2c_device_id nvt_ts_i2c_id[] = {
-	{ "nt11205-ts", (unsigned long) &nvt_nt11205_ts_data },
-	{ "nt36672a-ts", (unsigned long) &nvt_nt36672a_ts_data },
-	{ }
-};
-MODULE_DEVICE_TABLE(i2c, nvt_ts_i2c_id);
-
-static struct i2c_driver nvt_ts_driver = {
-	.driver = {
-		.name	= "novatek-nvt-ts",
-		.pm	= pm_sleep_ptr(&nvt_ts_pm_ops),
-		.of_match_table = nvt_ts_of_match,
-	},
-	.probe = nvt_ts_probe,
-	.id_table = nvt_ts_i2c_id,
-};
-
-module_i2c_driver(nvt_ts_driver);
-
-MODULE_DESCRIPTION("Novatek NT11205 touchscreen driver");
+MODULE_DESCRIPTION("Novatek core touchscreen driver");
 MODULE_AUTHOR("Hans de Goede <hdegoede@redhat.com>");
 MODULE_LICENSE("GPL");
