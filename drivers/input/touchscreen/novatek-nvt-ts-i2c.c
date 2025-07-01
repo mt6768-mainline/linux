@@ -25,7 +25,8 @@ static int nvt_ts_i2c_probe(struct i2c_client *i2c)
 	if (IS_ERR(regmap))
 		return PTR_ERR(regmap);
 
-	return nvt_ts_probe(&i2c->dev, i2c->irq, regmap, &nvt_ts_i2c_input_id);
+	return nvt_ts_probe(&i2c->dev, i2c->irq, regmap, &nvt_ts_i2c_input_id,
+			    NULL);
 }
 
 static const struct nvt_ts_chip_data nvt_nt11205_ts_data = {
