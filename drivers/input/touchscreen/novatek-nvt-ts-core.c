@@ -135,10 +135,8 @@ int nvt_ts_probe(struct device *dev, int irq, struct regmap *regmap,
 	const struct nvt_ts_chip_data *chip;
 	struct input_dev *input;
 
-	if (!irq) {
-		dev_err(dev, "Error no irq specified\n");
-		return -EINVAL;
-	}
+	if (!irq)
+		return dev_err_probe(dev, -EINVAL, "missing irq\n");
 
 	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
 	if (!data)
@@ -160,23 +158,18 @@ int nvt_ts_probe(struct device *dev, int irq, struct regmap *regmap,
 	data->regulators[0].supply = "vcc";
 	data->regulators[1].supply = "iovcc";
 	error = devm_regulator_bulk_get(dev, ARRAY_SIZE(data->regulators), data->regulators);
-	if (error) {
-		dev_err(dev, "cannot get regulators: %d\n", error);
-		return error;
-	}
+	if (error)
+		return dev_err_probe(dev, error, "cannot get regulators\n");
 
 	error = regulator_bulk_enable(ARRAY_SIZE(data->regulators), data->regulators);
-	if (error) {
-		dev_err(dev, "failed to enable regulators: %d\n", error);
-		return error;
-	}
+	if (error)
+		return dev_err_probe(dev, error, "failed to enable regulators\n");
 
 	data->reset_gpio = devm_gpiod_get(dev, "reset", GPIOD_OUT_LOW);
 	error = PTR_ERR_OR_ZERO(data->reset_gpio);
 	if (error) {
 		regulator_bulk_disable(ARRAY_SIZE(data->regulators), data->regulators);
-		dev_err(dev, "failed to request reset GPIO: %d\n", error);
-		return error;
+		return dev_err_probe(dev, error, "failed to request reset GPIO\n");
 	}
 
 	/* Wait for controller to come out of reset before params read */
@@ -234,16 +227,12 @@ int nvt_ts_probe(struct device *dev, int irq, struct regmap *regmap,
 					  IRQF_ONESHOT | IRQF_NO_AUTOEN |
 						nvt_ts_irq_type[irq_type],
 					  dev_name(dev), data);
-	if (error) {
-		dev_err(dev, "failed to request irq: %d\n", error);
-		return error;
-	}
+	if (error)
+		return dev_err_probe(dev, error, "failed to request irq\n");
 
 	error = input_register_device(input);
-	if (error) {
-		dev_err(dev, "failed to register input device: %d\n", error);
-		return error;
-	}
+	if (error)
+		return dev_err_probe(dev, error, "failed to register input device\n");
 
 	return 0;
 }
