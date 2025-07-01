@@ -75,19 +75,49 @@ static irqreturn_t nvt_ts_irq(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
+static int nvt_ts_upload_firmware(const struct nvt_ts_data *data)
+{
+	const struct firmware *firmware = NULL;
+	struct device *dev = data->dev;
+	int error;
+
+	if (!data->upload_firmware || !data->fw_name)
+		return 0;
+
+	error = request_firmware(&firmware, data->fw_name, dev);
+	if (error) {
+		dev_err(dev, "unable to load firmware: %d\n", error);
+		return error;
+	}
+
+	error = data->upload_firmware(data, firmware);
+
+	release_firmware(firmware);
+	return error;
+}
+
 static int nvt_ts_start(struct input_dev *dev)
 {
 	struct nvt_ts_data *data = input_get_drvdata(dev);
-	int error;
+	int ret;
 
-	error = regulator_bulk_enable(ARRAY_SIZE(data->regulators), data->regulators);
-	if (error) {
+	ret = regulator_bulk_enable(ARRAY_SIZE(data->regulators), data->regulators);
+	if (ret) {
 		dev_err(data->dev, "failed to enable regulators\n");
-		return error;
+		return ret;
 	}
 
 	enable_irq(data->irq);
 	gpiod_set_value_cansleep(data->reset_gpio, 0);
+
+	ret = nvt_ts_upload_firmware(data);
+	if (ret) {
+		dev_err(data->dev, "failed to upload firmware: %d\n", ret);
+		disable_irq(data->irq);
+		gpiod_set_value_cansleep(data->reset_gpio, 1);
+		regulator_bulk_disable(ARRAY_SIZE(data->regulators), data->regulators);
+		return ret;
+	}
 
 	return 0;
 }
@@ -128,7 +158,8 @@ static int nvt_ts_resume(struct device *dev)
 EXPORT_GPL_SIMPLE_DEV_PM_OPS(nvt_ts_pm_ops, nvt_ts_suspend, nvt_ts_resume);
 
 int nvt_ts_probe(struct device *dev, int irq, struct regmap *regmap,
-		 const struct input_id *id)
+		 const struct input_id *id,
+		 nvt_ts_upload_firmware_impl upload_firmware)
 {
 	int error, width, height, irq_type;
 	struct nvt_ts_data *data;
@@ -146,9 +177,17 @@ int nvt_ts_probe(struct device *dev, int irq, struct regmap *regmap,
 	if (!chip)
 		return -EINVAL;
 
+	if (upload_firmware) {
+		error = device_property_read_string(dev, "firmware-name", &data->fw_name);
+		if (error)
+			return dev_err_probe(dev, error, "unable to get firmware name\n");
+	}
+
 	data->dev = dev;
 	data->regmap = regmap;
 	data->irq = irq;
+	data->upload_firmware = upload_firmware;
+	data->memory_map = chip->memory_map;
 	dev_set_drvdata(dev, data);
 
 	/*
@@ -170,6 +209,13 @@ int nvt_ts_probe(struct device *dev, int irq, struct regmap *regmap,
 	if (error) {
 		regulator_bulk_disable(ARRAY_SIZE(data->regulators), data->regulators);
 		return dev_err_probe(dev, error, "failed to request reset GPIO\n");
+	}
+
+	error = nvt_ts_upload_firmware(data);
+	if (error) {
+		gpiod_set_value_cansleep(data->reset_gpio, 1);
+		regulator_bulk_disable(ARRAY_SIZE(data->regulators), data->regulators);
+		return dev_err_probe(dev, error, "failed to upload firmware\n");
 	}
 
 	/* Wait for controller to come out of reset before params read */
