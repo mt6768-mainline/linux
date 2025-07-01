@@ -69,6 +69,7 @@ obj-$(CONFIG_TOUCHSCREEN_MTOUCH)	+= mtouch.o
 obj-$(CONFIG_TOUCHSCREEN_MK712)		+= mk712.o
 obj-$(CONFIG_TOUCHSCREEN_NOVATEK_NVT_TS_CORE)	+= novatek-nvt-ts-core.o
 obj-$(CONFIG_TOUCHSCREEN_NOVATEK_NVT_TS_I2C)	+= novatek-nvt-ts-i2c.o
+obj-$(CONFIG_TOUCHSCREEN_NOVATEK_NVT_TS_SPI)	+= novatek-nvt-ts-spi.o
 obj-$(CONFIG_TOUCHSCREEN_HP600)		+= hp680_ts_input.o
 obj-$(CONFIG_TOUCHSCREEN_HP7XX)		+= jornada720_ts.o
 obj-$(CONFIG_TOUCHSCREEN_IPAQ_MICRO)	+= ipaq-micro-ts.o

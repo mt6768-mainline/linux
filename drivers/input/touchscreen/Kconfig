@@ -675,6 +675,20 @@ config TOUCHSCREEN_NOVATEK_NVT_TS_I2C
 	  To compile this driver as a module, choose M here: the
 	  module will be called novatek-nvt-ts-i2c.
 
+config TOUCHSCREEN_NOVATEK_NVT_TS_SPI
+	tristate "Novatek SPI touchscreen support"
+	depends on SPI_MASTER
+	select REGMAP
+	select TOUCHSCREEN_NOVATEK_NVT_TS_CORE
+	help
+	  Say Y here if you have a Novatek touchscreen connected to
+	  your system via SPI.
+
+	  If unsure, say N.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called novatek-nvt-ts-spi.
+
 config TOUCHSCREEN_IMAGIS
 	tristate "Imagis touchscreen support"
 	depends on I2C
