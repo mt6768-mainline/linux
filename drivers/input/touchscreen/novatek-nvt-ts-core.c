@@ -131,29 +131,83 @@ static void nvt_ts_stop(struct input_dev *dev)
 	regulator_bulk_disable(ARRAY_SIZE(data->regulators), data->regulators);
 }
 
+static void nvt_ts_panel_prepare_work(struct work_struct *work)
+{
+	struct nvt_ts_data *data = container_of(work, struct nvt_ts_data, panel_follower_prepare_work);
+
+	int ret = nvt_ts_start(data->input);
+	if (!ret) {
+		WRITE_ONCE(data->prepare_work_finished, true);
+		smp_wmb();
+	}
+}
+
+static int nvt_ts_input_stop(const struct nvt_ts_data *data)
+{
+       mutex_lock(&data->input->mutex);
+       if (input_device_enabled(data->input))
+               nvt_ts_stop(data->input);
+       mutex_unlock(&data->input->mutex);
+
+       return 0;
+}
+
 static int nvt_ts_suspend(struct device *dev)
 {
-	const struct nvt_ts_data *data = dev_get_drvdata(dev);
+	struct nvt_ts_data *data = dev_get_drvdata(dev);
 
-	mutex_lock(&data->input->mutex);
-	if (input_device_enabled(data->input))
-		nvt_ts_stop(data->input);
-	mutex_unlock(&data->input->mutex);
+	if (drm_is_panel_follower(dev))
+		return 0;
 
-	return 0;
+	cancel_work_sync(&data->panel_follower_prepare_work);
+
+	smp_rmb();
+	if (!READ_ONCE(data->prepare_work_finished))
+		return 0;
+
+	return nvt_ts_input_stop(data);
 }
 
 static int nvt_ts_resume(struct device *dev)
 {
-	const struct nvt_ts_data *data = dev_get_drvdata(dev);
+	struct nvt_ts_data *data = dev_get_drvdata(dev);
 
-	mutex_lock(&data->input->mutex);
-	if (input_device_enabled(data->input))
-		nvt_ts_start(data->input);
-	mutex_unlock(&data->input->mutex);
+	if (drm_is_panel_follower(dev))
+		return 0;
+
+	WRITE_ONCE(data->prepare_work_finished, false);
+	schedule_work(&data->panel_follower_prepare_work);
 
 	return 0;
 }
+
+static int panel_prepared(struct drm_panel_follower *follower)
+{
+	struct nvt_ts_data *data = container_of(follower, struct nvt_ts_data, panel_follower);
+
+	WRITE_ONCE(data->prepare_work_finished, false);
+	schedule_work(&data->panel_follower_prepare_work);
+
+	return 0;
+}
+
+static int panel_unpreparing(struct drm_panel_follower *follower)
+{
+	struct nvt_ts_data *data = container_of(follower, struct nvt_ts_data, panel_follower);
+
+	cancel_work_sync(&data->panel_follower_prepare_work);
+
+	smp_rmb();
+	if (!READ_ONCE(data->prepare_work_finished))
+		return 0;
+
+	return nvt_ts_input_stop(data);
+}
+
+static struct drm_panel_follower_funcs nvt_ts_panel_follower_funcs = {
+	.panel_prepared = panel_prepared,
+	.panel_unpreparing = panel_unpreparing,
+};
 
 EXPORT_GPL_SIMPLE_DEV_PM_OPS(nvt_ts_pm_ops, nvt_ts_suspend, nvt_ts_resume);
 
@@ -254,8 +308,6 @@ int nvt_ts_probe(struct device *dev, int irq, struct regmap *regmap,
 
 	input->name = dev_name(dev);
 	input->id = *id;
-	input->open = nvt_ts_start;
-	input->close = nvt_ts_stop;
 
 	input_set_abs_params(input, ABS_MT_POSITION_X, 0, width - 1, 0, 0);
 	input_set_abs_params(input, ABS_MT_POSITION_Y, 0, height - 1, 0, 0);
@@ -275,6 +327,15 @@ int nvt_ts_probe(struct device *dev, int irq, struct regmap *regmap,
 					  dev_name(dev), data);
 	if (error)
 		return dev_err_probe(dev, error, "failed to request irq\n");
+
+	if (drm_is_panel_follower(dev)) {
+		INIT_WORK(&data->panel_follower_prepare_work, nvt_ts_panel_prepare_work);
+		data->panel_follower.funcs = &nvt_ts_panel_follower_funcs;
+		devm_drm_panel_add_follower(dev, &data->panel_follower);
+	} else {
+		input->open = nvt_ts_start;
+		input->close = nvt_ts_stop;
+	}
 
 	error = input_register_device(input);
 	if (error)
