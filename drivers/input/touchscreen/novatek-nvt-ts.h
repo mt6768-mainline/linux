@@ -2,6 +2,8 @@
 #ifndef __NOVATEK_NVT_TS_H_
 #define __NOVATEK_NVT_TS_H_
 
+#include <drm/drm_panel.h>
+
 #include <linux/firmware.h>
 #include <linux/input.h>
 #include <linux/input/touchscreen.h>
@@ -72,6 +74,9 @@ struct nvt_ts_data {
 	int irq;
 	nvt_ts_upload_firmware_impl upload_firmware;
 	const struct nvt_ts_memory_map *memory_map;
+	struct drm_panel_follower panel_follower;
+	struct work_struct panel_follower_prepare_work;
+	bool prepare_work_finished;
 	const char *fw_name;
 	u8 buf[NVT_TS_TOUCH_SIZE * NVT_TS_MAX_TOUCHES];
 };
