@@ -38,6 +38,7 @@ properties:
       # SYST Timers
       - items:
           - enum:
+              - mediatek,mt6768-timer
               - mediatek,mt7629-timer
               - mediatek,mt8183-timer
               - mediatek,mt8186-timer
