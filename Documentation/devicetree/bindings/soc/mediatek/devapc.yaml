@@ -19,6 +19,7 @@ maintainers:
 properties:
   compatible:
     enum:
+      - mediatek,mt6768-devapc
       - mediatek,mt6779-devapc
       - mediatek,mt8186-devapc
 
