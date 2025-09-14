@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright (c) 2022 Jami Kettunen
+ */
+
+#include "mt6769t.dtsi"
+
+/* TODO:
+ * - 1000 MHz GPU clock (up from 820 MHz)
+ */
