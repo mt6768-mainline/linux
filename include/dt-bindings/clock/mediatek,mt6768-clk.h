@@ -397,4 +397,9 @@
 #define SCP_SYS_VDEC			12
 #define SCP_NR_SYSS			13
 
+/* MCU */
+#define CLK_MCU_PLL_LL_SEL 0
+#define CLK_MCU_PLL_L_SEL 1
+#define CLK_MCU_PLL_BUS_SEL 2
+
 #endif /* _DT_BINDINGS_CLK_MT6768_H */

@@ -193,6 +193,12 @@ config COMMON_CLK_MT6765_MMSYS
        help
          This driver supports MediaTek MT6765 mmsys clocks.
 
+config COMMON_CLK_MT6768_MMSYS
+       tristate "Clock driver for MediaTek MT6768 mmsys"
+       depends on COMMON_CLK_MT6768
+       help
+         This driver supports MediaTek MT6768 mmsys clocks.
+
 config COMMON_CLK_MT6765_IMGSYS
        tristate "Clock driver for MediaTek MT6765 imgsys"
        depends on COMMON_CLK_MT6765
@@ -246,6 +252,65 @@ config COMMON_CLK_MT6765_MIPI2BSYS
        depends on COMMON_CLK_MT6765
        help
          This driver supports MediaTek MT6765 mipi2bsys clocks.
+
+config COMMON_CLK_MT6768
+       bool "Clock driver for MediaTek MT6768"
+       depends on (ARCH_MEDIATEK && ARM64) || COMPILE_TEST
+       select COMMON_CLK_MEDIATEK
+       default ARCH_MEDIATEK && ARM64
+       help
+         This driver supports MediaTek MT6768 basic clocks.
+
+config COMMON_CLK_MT6768_MCUSYS
+	tristate "Clock driver for MediaTek MT6768 mcusys"
+	depends on COMMON_CLK_MT6768
+	default COMMON_CLK_MT6768
+	help
+	  This driver supports MediaTek MT6768 mcusys clocks.
+
+config COMMON_CLK_MT6768_MFGCFG
+	tristate "Clock driver for MediaTek MT6768 mfgcfg"
+	depends on COMMON_CLK_MT6768
+	help
+	  This driver supports MediaTek MT6768 mfgcfg clocks.
+
+config COMMON_CLK_MT6768_AUDIOSYS
+       tristate "Clock driver for MediaTek MT6768 audiosys"
+       depends on COMMON_CLK_MT6768
+       help
+         This driver supports MediaTek MT6768 audiosys clocks.
+
+config COMMON_CLK_MT6768_CAMSYS
+       tristate "Clock driver for MediaTek MT6768 camsys"
+       depends on COMMON_CLK_MT6768
+       help
+         This driver supports MediaTek MT6768 camsys clocks.
+
+config COMMON_CLK_MT6768_IMGSYS
+       tristate "Clock driver for MediaTek MT6768 imgsys"
+       depends on COMMON_CLK_MT6768
+       help
+         This driver supports MediaTek MT6768 imgsys clocks.
+
+config COMMON_CLK_MT6768_VDECSYS
+	tristate "Clock driver for MediaTek MT6768 vdecsys"
+	depends on COMMON_CLK_MT6768
+	help
+	  This enables a driver for clocks and resets provided
+	  by vdecsys on the MediaTek MT6768 SoC.
+
+config COMMON_CLK_MT6768_VENCSYS
+	tristate "Clock driver for MediaTek MT6768 vencsys"
+	depends on COMMON_CLK_MT6768
+	help
+	  This enables a driver for clocks provided by vencsys
+	  on the MediaTek MT6768 SoC.
+
+config COMMON_CLK_MT6768_MIPI
+       tristate "Clock driver for MediaTek MT6768 mipi"
+       depends on COMMON_CLK_MT6768
+       help
+         This driver supports MediaTek MT6768 mipi clocks.
 
 config COMMON_CLK_MT6779
 	tristate "Clock driver for MediaTek MT6779"
