@@ -27,6 +27,7 @@ properties:
               - mediatek,mt6592-sysirq
               - mediatek,mt6755-sysirq
               - mediatek,mt6765-sysirq
+              - mediatek,mt6768-sysirq
               - mediatek,mt6779-sysirq
               - mediatek,mt6795-sysirq
               - mediatek,mt6797-sysirq
