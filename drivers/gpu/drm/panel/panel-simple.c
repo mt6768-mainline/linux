@@ -5656,6 +5656,36 @@ static const struct panel_desc_dsi osd101t2045_53ts = {
 	.lanes = 4,
 };
 
+static const struct drm_display_mode nt36672a_tianma_merlin_mode = {
+	.clock = (1080 + 60 + 10 + 60) * (2340 + 10 + 2 + 8) * 60 / 1000,
+	.hdisplay = 1080,
+	.hsync_start = 1080 + 60,
+	.hsync_end = 1080 + 60 + 10,
+	.htotal = 1080 + 60 + 10 + 60,
+	.vdisplay = 2340,
+	.vsync_start = 2340 + 10,
+	.vsync_end = 2340 + 10 + 2,
+	.vtotal = 2340 + 10 + 2 + 8,
+	.width_mm = 69,
+	.height_mm = 151,
+};
+
+static const struct panel_desc_dsi nt36672a_tianma_merlin = {
+	.desc = {
+		.modes = &nt36672a_tianma_merlin_mode,
+		.num_modes = 1,
+		.bpc = 8,
+		.size = {
+			.width = 69,
+			.height = 151,
+		},
+		.connector_type = DRM_MODE_CONNECTOR_DSI,
+	},
+	.flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE,
+	.format = MIPI_DSI_FMT_RGB888,
+	.lanes = 4,
+};
+
 static const struct of_device_id dsi_of_match[] = {
 	{
 		.compatible = "auo,b080uan01",
@@ -5678,6 +5708,9 @@ static const struct of_device_id dsi_of_match[] = {
 	}, {
 		.compatible = "osddisplays,osd101t2045-53ts",
 		.data = &osd101t2045_53ts
+	}, {
+		.compatible = "tianma,nt36672a-xiaomi-merlin-simple",
+		.data = &nt36672a_tianma_merlin
 	}, {
 		/* sentinel */
 	}
