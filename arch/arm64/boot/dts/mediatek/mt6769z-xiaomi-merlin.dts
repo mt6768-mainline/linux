@@ -51,6 +51,18 @@
 	regulator-always-on;
 };
 
+/* mt6358_vaud28_reg - audio */
+/* mt6358_vbif28_reg - bluetooth? */
+
+&mt6358_vio28_reg {
+	regulator-always-on;
+};
+
+// I guess
+&mt6358_vaux18_reg {
+	regulator-always-on;
+};
+
 &pmic {
 	interrupts-extended = <&pio 144 IRQ_TYPE_LEVEL_HIGH>;
 };
