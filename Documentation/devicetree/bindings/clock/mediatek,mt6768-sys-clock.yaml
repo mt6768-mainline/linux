@@ -1,0 +1,53 @@
+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/clock/mediatek,mt6768-sys-clock.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: MediaTek System Clock Controller for MT6768
+
+maintainers:
+  - FIXME
+
+description: |
+  The Mediatek system clock controller provides various clocks and system
+  configuration like reset and bus protection on MT6768.
+
+properties:
+  compatible:
+    items:
+      - enum:
+          - mediatek,mt6768-apmixedsys
+          - mediatek,mt6768-infracfg_ao
+          - mediatek,mt6768-pericfg
+          - mediatek,mt6768-topckgen
+      - const: syscon
+
+  reg:
+    maxItems: 1
+
+  '#clock-cells':
+    const: 1
+
+  '#reset-cells':
+    const: 1
+
+required:
+  - compatible
+  - reg
+  - '#clock-cells'
+
+additionalProperties: false
+
+examples:
+  - |
+    soc {
+        #address-cells = <2>;
+        #size-cells = <2>;
+
+        topckgen: clock-controller@10000000 {
+            compatible = "mediatek,mt6768-topckgen", "syscon";
+            reg = <0 0x10000000 0 0x1000>;
+            #clock-cells = <1>;
+        };
+    };
