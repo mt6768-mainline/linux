@@ -344,10 +344,14 @@
 
 		mt6358keys: keys {
 			compatible = "mediatek,mt6358-keys";
+			mediatek,long-press-mode = <1>;
+			power-off-time-sec = <10>;
+
 			power {
 				linux,keycodes = <KEY_POWER>;
 				wakeup-source;
 			};
+
 			home {
 				linux,keycodes = <KEY_HOME>;
 			};
