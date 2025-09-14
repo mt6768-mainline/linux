@@ -35,6 +35,11 @@ properties:
           - const: arm,mali-bifrost # Mali Bifrost GPU model/revision is fully discoverable
       - items:
           - enum:
+              - mediatek,mt6768-mali
+          - const: mediatek,mt8186-mali
+          - const: arm,mali-bifrost # Mali Bifrost GPU model/revision is fully discoverable
+      - items:
+          - enum:
               - mediatek,mt8195-mali
           - const: mediatek,mt8192-mali
           - const: arm,mali-valhall-jm # Mali Valhall GPU model/revision is fully discoverable
