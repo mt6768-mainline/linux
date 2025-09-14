@@ -155,6 +155,13 @@ config PINCTRL_MT6765
 	default ARM64 && ARCH_MEDIATEK
 	select PINCTRL_MTK_PARIS
 
+config PINCTRL_MT6768
+	bool "Mediatek MT6768 pin control"
+	depends on OF
+	depends on ARM64 || COMPILE_TEST
+	default ARM64 && ARCH_MEDIATEK
+	select PINCTRL_MTK_PARIS
+
 config PINCTRL_MT6779
 	tristate "MediaTek MT6779 pin control"
 	depends on OF
