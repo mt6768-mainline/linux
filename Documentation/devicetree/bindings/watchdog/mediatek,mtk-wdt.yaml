@@ -35,6 +35,7 @@ properties:
           - enum:
               - mediatek,mt2701-wdt
               - mediatek,mt6582-wdt
+              - mediatek,mt6768-wdt
               - mediatek,mt6797-wdt
               - mediatek,mt7622-wdt
               - mediatek,mt7623-wdt
