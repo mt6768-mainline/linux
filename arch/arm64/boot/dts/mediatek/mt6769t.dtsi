@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+#include "mt6768.dtsi"
+
+&cluster0_opp {
+	/delete-node/ opp0-1700000000;
+
+	opp0-1800000000 {
+		opp-hz = /bits/ 64 <1800000000>;
+		opp-microvolt = <1006250>;
+		required-opps = <&opp2_15>;
+	};
+};
