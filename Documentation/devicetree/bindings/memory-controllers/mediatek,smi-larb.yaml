@@ -30,6 +30,10 @@ properties:
           - mediatek,mt8192-smi-larb
           - mediatek,mt8195-smi-larb
 
+      - items:
+          - const: mediatek,mt6768-smi-larb
+          - const: mediatek,mt8192-smi-larb
+
       - description: for mt7623
         items:
           - const: mediatek,mt7623-smi-larb
