@@ -24,6 +24,7 @@ properties:
     items:
       - enum:
           - mediatek,mt2701-cirq
+          - mediatek,mt6768-cirq
           - mediatek,mt8135-cirq
           - mediatek,mt8173-cirq
           - mediatek,mt8192-cirq
