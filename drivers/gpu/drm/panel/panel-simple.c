@@ -5686,6 +5686,35 @@ static const struct panel_desc_dsi nt36672a_tianma_merlin = {
 	.lanes = 4,
 };
 
+static const struct drm_display_mode icnl9916_chipone_penangf_mode = {
+    .clock = 71100,
+    .hdisplay = 720,
+    .hsync_start = 720 + 30,
+    .hsync_end = 720 + 30 + 4,
+    .htotal = 720 + 30 + 4 + 40,
+    .vdisplay = 1600,
+    .vsync_start = 1600 + 1248,
+    .vsync_end = 1600 + 1248 + 4,
+    .vtotal = 1600 + 1248 + 4 + 32,
+};
+
+static const struct panel_desc_dsi icnl9916_chipone_penangf = {
+    .desc = {
+        .modes = &icnl9916_chipone_penangf_mode,
+        .num_modes = 1,
+        .bpc = 8,
+        .size = {
+            .width = 64,
+            .height = 129,
+        },
+        .connector_type = DRM_MODE_CONNECTOR_DSI,
+    },
+    .flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST |
+             MIPI_DSI_MODE_LPM | MIPI_DSI_CLOCK_NON_CONTINUOUS,
+    .format = MIPI_DSI_FMT_RGB888,
+    .lanes = 4,
+};
+
 static const struct of_device_id dsi_of_match[] = {
 	{
 		.compatible = "auo,b080uan01",
@@ -5711,6 +5740,9 @@ static const struct of_device_id dsi_of_match[] = {
 	}, {
 		.compatible = "tianma,nt36672a-xiaomi-merlin-simple",
 		.data = &nt36672a_tianma_merlin
+	}, {
+		.compatible = "chipone,icnl9916",
+		.data = &icnl9916_chipone_penangf
 	}, {
 		/* sentinel */
 	}
