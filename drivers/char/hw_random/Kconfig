@@ -477,6 +477,18 @@ config HW_RANDOM_MTK
 
 	  If unsure, say Y.
 
+config HW_RANDOM_MTK_TRNG
+	tristate "MediaTek TRNG firmware interface support"
+	depends on ARCH_MEDIATEK || COMPILE_TEST
+	default HW_RANDOM
+	help
+	  Say 'Y' to enable the True Random Number Generator driver using
+	  the MediaTek TRNG firmware interface. This reads entropy from
+	  higher exception levels (firmware, hypervisor).
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called mtk_trng.
+
 config HW_RANDOM_S390
 	tristate "S390 True Random Number Generator support"
 	depends on S390
