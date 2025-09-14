@@ -256,6 +256,12 @@ patternProperties:
           use the property "mediatek,syscon-type" for newer SoCs that support it.
         type: boolean
 
+      mediatek,software-role-switch:
+        description:
+          Forcibly sets the phy mode. In dual-role mode, it polls
+          role switcher and manually changes mode accordingly.
+          PHY port must be linked with the role switcher via device tree graphs.
+
       mediatek,syscon-type:
         $ref: /schemas/types.yaml#/definitions/phandle-array
         maxItems: 1
