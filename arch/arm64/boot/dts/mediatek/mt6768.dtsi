@@ -1123,6 +1123,21 @@
 			status = "disabled";
 		};
 
+		soc_data: efuse@08000000 {
+			compatible = "mediatek,efuse";
+			reg = <0 0x08000000 0 0x10>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			socinfo-data1@0 {
+				reg = <0x0 0x4>;
+			};
+
+			socinfo-data2@4 {
+				reg = <0x4 0x4>;
+			};
+		};
+
 		gic: interrupt-controller@c000000 {
 			compatible = "arm,gic-v3";
 			#interrupt-cells = <4>;
@@ -1244,6 +1259,34 @@
 				clocks = <&infracfg_ao CLK_INFRA_ICUSB>;
 				clock-names = "ref";
 				#phy-cells = <1>;
+			};
+		};
+
+		efuse: efuse@11ce0000 {
+			compatible = "mediatek,mt8183-efuse",
+				     "mediatek,efuse";
+			reg = <0 0x11ce0000 0 0x1000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			/*socinfo-data1@4c {
+				reg = <0x04c 0x4>;
+			};
+
+			socinfo-data2@60 {
+				reg = <0x060 0x4>;
+			};*/
+
+			/* efuse_segment @ 0x78 - cpu/gpufreq calibration data */
+
+			svs_calibration: calib@c8 {
+				reg = <0x0c8 0x3c>;
+			};
+
+			/* u2_phy_data @ 0x1AC - phy calibration data */
+
+			thermal_calibration: calib@190 {
+				reg = <0x190 0x48>;
 			};
 		};
 
