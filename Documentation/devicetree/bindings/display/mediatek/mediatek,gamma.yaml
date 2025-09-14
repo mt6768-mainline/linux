@@ -31,6 +31,7 @@ properties:
           - const: mediatek,mt8173-disp-gamma
       - items:
           - enum:
+              - mediatek,mt6768-disp-gamma
               - mediatek,mt8186-disp-gamma
               - mediatek,mt8188-disp-gamma
               - mediatek,mt8192-disp-gamma
