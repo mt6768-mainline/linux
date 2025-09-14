@@ -412,7 +412,7 @@ static const struct mtk_i2c_compatible mt6768_compat = {
 	.timing_adjust = 1,
 	.dma_sync = 1,
 	.ltiming_adjust = 1,
-	.apdma_sync = 0,
+	.apdma_sync = 1,
 	.max_dma_support = 36,
 };
 
@@ -1098,6 +1098,8 @@ static int mtk_i2c_do_transfer(struct mtk_i2c *i2c, struct i2c_msg *msgs,
 		if (i2c->op == I2C_MASTER_WRRD)
 			dma_sync |= I2C_DMA_DIR_CHANGE;
 	}
+
+	dma_sync = 0;
 
 	/* Prepare buffer data to start transfer */
 	if (i2c->op == I2C_MASTER_RD) {
