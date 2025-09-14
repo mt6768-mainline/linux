@@ -130,6 +130,7 @@ static const struct of_device_id blocklist[] __initconst = {
 
 	{ .compatible = "mediatek,mt2701", },
 	{ .compatible = "mediatek,mt2712", },
+	{ .compatible = "mediatek,mt6768", },
 	{ .compatible = "mediatek,mt7622", },
 	{ .compatible = "mediatek,mt7623", },
 	{ .compatible = "mediatek,mt8167", },
