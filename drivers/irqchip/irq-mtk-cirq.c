@@ -287,6 +287,7 @@ static inline void mtk_cirq_syscore_init(void) {}
 
 static const struct of_device_id mtk_cirq_of_match[] = {
 	{ .compatible = "mediatek,mt2701-cirq", .data = &mtk_cirq_regoffs_v1 },
+	{ .compatible = "mediatek,mt6768-cirq", .data = &mtk_cirq_regoffs_v1 },
 	{ .compatible = "mediatek,mt8135-cirq", .data = &mtk_cirq_regoffs_v1 },
 	{ .compatible = "mediatek,mt8173-cirq", .data = &mtk_cirq_regoffs_v1 },
 	{ .compatible = "mediatek,mt8192-cirq", .data = &mtk_cirq_regoffs_v2 },
