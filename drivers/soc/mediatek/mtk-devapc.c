@@ -229,6 +229,11 @@ static const struct mtk_devapc_regs_ofs devapc_regs_ofs_mt6779 = {
 	.vio_shift_con_offset = 0xF20,
 };
 
+static const struct mtk_devapc_data devapc_mt6768 = {
+	.vio_idx_num = 270,
+	.regs_ofs = &devapc_regs_ofs_mt6779,
+};
+
 static const struct mtk_devapc_data devapc_mt6779 = {
 	.vio_idx_num = 511,
 	.regs_ofs = &devapc_regs_ofs_mt6779,
@@ -241,6 +246,9 @@ static const struct mtk_devapc_data devapc_mt8186 = {
 
 static const struct of_device_id mtk_devapc_dt_match[] = {
 	{
+		.compatible = "mediatek,mt6768-devapc",
+		.data = &devapc_mt6768,
+	}, {
 		.compatible = "mediatek,mt6779-devapc",
 		.data = &devapc_mt6779,
 	}, {
