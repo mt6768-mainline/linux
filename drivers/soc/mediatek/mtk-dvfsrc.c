@@ -28,6 +28,7 @@
 #define DVFSRC_V2_SW_REQ_VCORE_LEVEL	GENMASK(6, 4)
 
 /* DVFSRC_VCORE */
+#define DVFSRC_V1_VCORE_REQ_VSCP_LEVEL	GENMASK(30, 3)
 #define DVFSRC_V2_VCORE_REQ_VSCP_LEVEL	GENMASK(14, 12)
 
 #define DVFSRC_POLL_TIMEOUT_US		1000
@@ -101,6 +102,14 @@ enum dvfsrc_regs {
 	DVFSRC_SW_HRT_BW,
 	DVFSRC_VCORE,
 	DVFSRC_REGS_MAX,
+};
+
+static const int dvfsrc_mt6768_regs[] = {
+	[DVFSRC_SW_REQ] =		0x4,
+	[DVFSRC_LEVEL] =		0xDC,
+	[DVFSRC_SW_BW] =		0x16C,
+	[DVFSRC_SW_PEAK_BW] =		0x160,
+	[DVFSRC_VCORE] =	0x48,
 };
 
 static const int dvfsrc_mt8183_regs[] = {
@@ -248,6 +257,23 @@ static void dvfsrc_set_vcore_level_v2(struct mtk_dvfsrc *dvfsrc, u32 level)
 	val |= FIELD_PREP(DVFSRC_V2_SW_REQ_VCORE_LEVEL, level);
 
 	dvfsrc_writel(dvfsrc, DVFSRC_SW_REQ, val);
+}
+
+static u32 dvfsrc_get_vscp_level_v1(struct mtk_dvfsrc *dvfsrc)
+{
+	u32 val = dvfsrc_readl(dvfsrc, DVFSRC_VCORE);
+
+	return FIELD_GET(DVFSRC_V1_VCORE_REQ_VSCP_LEVEL, val);
+}
+
+static void dvfsrc_set_vscp_level_v1(struct mtk_dvfsrc *dvfsrc, u32 level)
+{
+	u32 val = dvfsrc_readl(dvfsrc, DVFSRC_VCORE);
+
+	val &= ~DVFSRC_V1_VCORE_REQ_VSCP_LEVEL;
+	val |= FIELD_PREP(DVFSRC_V1_VCORE_REQ_VSCP_LEVEL, level);
+
+	dvfsrc_writel(dvfsrc, DVFSRC_VCORE, val);
 }
 
 static u32 dvfsrc_get_vscp_level_v2(struct mtk_dvfsrc *dvfsrc)
@@ -453,6 +479,38 @@ static const struct dvfsrc_bw_constraints dvfsrc_bw_constr_v2 = {
 	.max_dram_hrt_bw = 1023,
 };
 
+static const struct dvfsrc_opp dvfsrc_opp_mt6768[] = {
+	{0, 0}, {1, 0}, {1, 0}, {2, 0},
+	{2, 1}, {2, 0}, {2, 1}, {2, 1},
+	{3, 1}, {3, 2}, {3, 1}, {3, 2},
+	{3, 1}, {3, 2}, {3, 2}, {3, 2},
+};
+
+static const struct dvfsrc_opp_desc dvfsrc_opp_mt6768_desc[] = {
+	[0] = {
+		.opps = dvfsrc_opp_mt6768,
+		.num_opp = ARRAY_SIZE(dvfsrc_opp_mt6768),
+	}
+};
+
+static const struct dvfsrc_soc_data mt6768_data = {
+	.opps_desc = dvfsrc_opp_mt6768_desc,
+	.regs = dvfsrc_mt6768_regs,
+	.get_target_level = dvfsrc_get_target_level_v2,
+	.get_current_level = dvfsrc_get_current_level_v2,
+	.get_vcore_level = dvfsrc_get_vcore_level_v1,
+	.get_vscp_level = dvfsrc_get_vscp_level_v1,
+	.set_dram_bw = dvfsrc_set_dram_bw_v1,
+	.set_dram_peak_bw = dvfsrc_set_dram_peak_bw_v1,
+	.set_dram_hrt_bw = dvfsrc_set_dram_hrt_bw_v1,
+	.set_vcore_level = dvfsrc_set_vcore_level_v1,
+	.set_vscp_level = dvfsrc_set_vscp_level_v1,
+	.wait_for_opp_level = dvfsrc_wait_for_opp_level_v2,
+	.wait_for_vcore_level = dvfsrc_wait_for_vcore_level_v1,
+	.bw_constraints = &dvfsrc_bw_constr_v1,
+};
+
+
 static const struct dvfsrc_opp dvfsrc_opp_mt6893_lp4[] = {
 	{ 0, 0 }, { 1, 0 }, { 2, 0 }, { 3, 0 },
 	{ 0, 1 }, { 1, 1 }, { 2, 1 }, { 3, 1 },
@@ -557,6 +615,7 @@ static const struct dvfsrc_soc_data mt8195_data = {
 };
 
 static const struct of_device_id mtk_dvfsrc_of_match[] = {
+	{ .compatible = "mediatek,mt6768-dvfsrc", .data = &mt6768_data },
 	{ .compatible = "mediatek,mt6893-dvfsrc", .data = &mt6893_data },
 	{ .compatible = "mediatek,mt8183-dvfsrc", .data = &mt8183_data },
 	{ .compatible = "mediatek,mt8195-dvfsrc", .data = &mt8195_data },
