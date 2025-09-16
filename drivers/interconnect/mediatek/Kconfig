@@ -14,6 +14,13 @@ config INTERCONNECT_MTK_DVFSRC_EMI
 	  interconnect on SoCs equipped with the integrated Dynamic
 	  Voltage Frequency Scaling Resource Collector (DVFSRC) MCU
 
+config INTERCONNECT_MTK_MT6873
+	tristate "MediaTek MT6873 interconnect driver"
+	depends on INTERCONNECT_MTK_DVFSRC_EMI
+	help
+	  This is a driver for the MediaTek bus interconnect on MT6873-based
+	  platforms.
+
 config INTERCONNECT_MTK_MT8183
 	tristate "MediaTek MT8183 interconnect driver"
 	depends on INTERCONNECT_MTK_DVFSRC_EMI
