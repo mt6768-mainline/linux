@@ -5,6 +5,8 @@
  *                    AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
  */
 
+#include <linux/mfd/syscon.h>
+#include <linux/regmap.h>
 #include <linux/arm-smccc.h>
 #include <linux/bitfield.h>
 #include <linux/iopoll.h>
@@ -431,11 +433,211 @@ int mtk_dvfsrc_query_info(const struct device *dev, u32 cmd, int *data)
 }
 EXPORT_SYMBOL(mtk_dvfsrc_query_info);
 
+#define DVFSRC_BASIC_CONTROL       (0x0)
+#define DVFSRC_SW_REQ              (0x4)
+#define DVFSRC_SW_REQ2             (0x8)
+#define DVFSRC_EMI_REQUEST         (0xC)
+#define DVFSRC_EMI_REQUEST2        (0x10)
+#define DVFSRC_EMI_REQUEST3        (0x14)
+#define DVFSRC_EMI_HRT             (0x18)
+#define DVFSRC_EMI_HRT2            (0x1C)
+#define DVFSRC_EMI_HRT3            (0x20)
+#define DVFSRC_EMI_QOS0            (0x24)
+#define DVFSRC_EMI_QOS1            (0x28)
+#define DVFSRC_EMI_QOS2            (0x2C)
+#define DVFSRC_EMI_MD2SPM0         (0x30)
+#define DVFSRC_EMI_MD2SPM1         (0x34)
+#define DVFSRC_EMI_MD2SPM2         (0x38)
+#define DVFSRC_EMI_MD2SPM0_T       (0x3C)
+#define DVFSRC_EMI_MD2SPM1_T       (0x40)
+#define DVFSRC_EMI_MD2SPM2_T       (0x44)
+#define DVFSRC_VCORE_REQUEST       (0x48)
+#define DVFSRC_VCORE_REQUEST2      (0x4C)
+#define DVFSRC_VCORE_HRT           (0x50)
+#define DVFSRC_VCORE_HRT2          (0x54)
+#define DVFSRC_VCORE_HRT3          (0x58)
+#define DVFSRC_VCORE_QOS0          (0x5C)
+#define DVFSRC_VCORE_QOS1          (0x60)
+#define DVFSRC_VCORE_QOS2          (0x64)
+#define DVFSRC_VCORE_MD2SPM0       (0x68)
+#define DVFSRC_VCORE_MD2SPM1       (0x6C)
+#define DVFSRC_VCORE_MD2SPM2       (0x70)
+#define DVFSRC_VCORE_MD2SPM0_T     (0x74)
+#define DVFSRC_VCORE_MD2SPM1_T     (0x78)
+#define DVFSRC_VCORE_MD2SPM2_T     (0x7C)
+#define DVFSRC_MD_REQUEST          (0x80)
+#define DVFSRC_MD_SW_CONTROL	   (0x84)
+#define DVFSRC_MD_VMODEM_REMAP     (0x88)
+#define DVFSRC_MD_VMD_REMAP        (0x8C)
+#define DVFSRC_MD_VSRAM_REMAP      (0x90)
+#define DVFSRC_HALT_SW_CONTROL	   (0x94)
+#define DVFSRC_INT                 (0x98)
+#define DVFSRC_INT_EN              (0x9C)
+#define DVFSRC_INT_CLR             (0xA0)
+#define DVFSRC_BW_MON_WINDOW       (0xA4)
+#define DVFSRC_BW_MON_THRES_1      (0xA8)
+#define DVFSRC_BW_MON_THRES_2      (0xAC)
+#define DVFSRC_MD_TURBO            (0xB0)
+#define DVFSRC_DEBOUNCE_FOUR       (0xD0)
+#define DVFSRC_DEBOUNCE_RISE_FALL  (0xD4)
+#define DVFSRC_TIMEOUT_NEXTREQ     (0xD8)
+#define DVFSRC_LEVEL               (0xDC)
+#define DVFSRC_LEVEL_LABEL_0_1     (0xE0)
+#define DVFSRC_LEVEL_LABEL_2_3     (0xE4)
+#define DVFSRC_LEVEL_LABEL_4_5     (0xE8)
+#define DVFSRC_LEVEL_LABEL_6_7     (0xEC)
+#define DVFSRC_LEVEL_LABEL_8_9     (0xF0)
+#define DVFSRC_LEVEL_LABEL_10_11   (0xF4)
+#define DVFSRC_LEVEL_LABEL_12_13   (0xF8)
+#define DVFSRC_LEVEL_LABEL_14_15   (0xFC)
+#define DVFSRC_MM_BW_0             (0x100)
+#define DVFSRC_MM_BW_1             (0x104)
+#define DVFSRC_MM_BW_2             (0x108)
+#define DVFSRC_MM_BW_3             (0x10C)
+#define DVFSRC_MM_BW_4             (0x110)
+#define DVFSRC_MM_BW_5             (0x114)
+#define DVFSRC_MM_BW_6             (0x118)
+#define DVFSRC_MM_BW_7             (0x11C)
+#define DVFSRC_MM_BW_8             (0x120)
+#define DVFSRC_MM_BW_9             (0x124)
+#define DVFSRC_MM_BW_10            (0x128)
+#define DVFSRC_MM_BW_11            (0x12C)
+#define DVFSRC_MM_BW_12            (0x130)
+#define DVFSRC_MM_BW_13            (0x134)
+#define DVFSRC_MM_BW_14            (0x138)
+#define DVFSRC_MM_BW_15            (0x13C)
+#define DVFSRC_MD_BW_0             (0x140)
+#define DVFSRC_MD_BW_1             (0x144)
+#define DVFSRC_MD_BW_2             (0x148)
+#define DVFSRC_MD_BW_3             (0x14C)
+#define DVFSRC_MD_BW_4             (0x150)
+#define DVFSRC_MD_BW_5             (0x154)
+#define DVFSRC_MD_BW_6             (0x158)
+#define DVFSRC_MD_BW_7             (0x15C)
+#define DVFSRC_SW_BW_0             (0x160)
+#define DVFSRC_SW_BW_1             (0x164)
+#define DVFSRC_SW_BW_2             (0x168)
+#define DVFSRC_SW_BW_3             (0x16C)
+#define DVFSRC_SW_BW_4             (0x170)
+#define DVFSRC_QOS_EN              (0x180)
+#define DVFSRC_ISP_HRT             (0x190)
+#define DVFSRC_FORCE               (0x300)
+#define DVFSRC_SEC_SW_REQ          (0x304)
+#define DVFSRC_LAST                (0x308)
+#define DVFSRC_LAST_L              (0x30C)
+#define DVFSRC_MD_SCENARIO         (0X310)
+#define DVFSRC_RECORD_0_0          (0x400)
+#define DVFSRC_RECORD_0_1          (0x404)
+#define DVFSRC_RECORD_0_2          (0x408)
+#define DVFSRC_RECORD_1_0          (0x40C)
+#define DVFSRC_RECORD_1_1          (0x410)
+#define DVFSRC_RECORD_1_2          (0x414)
+#define DVFSRC_RECORD_2_0          (0x418)
+#define DVFSRC_RECORD_2_1          (0x41C)
+#define DVFSRC_RECORD_2_2          (0x420)
+#define DVFSRC_RECORD_3_0          (0x424)
+#define DVFSRC_RECORD_3_1          (0x428)
+#define DVFSRC_RECORD_3_2          (0x42C)
+#define DVFSRC_RECORD_4_0          (0x430)
+#define DVFSRC_RECORD_4_1          (0x434)
+#define DVFSRC_RECORD_4_2          (0x438)
+#define DVFSRC_RECORD_5_0          (0x43C)
+#define DVFSRC_RECORD_5_1          (0x440)
+#define DVFSRC_RECORD_5_2          (0x444)
+#define DVFSRC_RECORD_6_0          (0x448)
+#define DVFSRC_RECORD_6_1          (0x44C)
+#define DVFSRC_RECORD_6_2          (0x450)
+#define DVFSRC_RECORD_7_0          (0x454)
+#define DVFSRC_RECORD_7_1          (0x458)
+#define DVFSRC_RECORD_7_2          (0x45C)
+#define DVFSRC_RECORD_0_L_0        (0x460)
+#define DVFSRC_RECORD_0_L_1        (0x464)
+#define DVFSRC_RECORD_0_L_2        (0x468)
+#define DVFSRC_RECORD_1_L_0        (0x46C)
+#define DVFSRC_RECORD_1_L_1        (0x470)
+#define DVFSRC_RECORD_1_L_2        (0x474)
+#define DVFSRC_RECORD_2_L_0        (0x478)
+#define DVFSRC_RECORD_2_L_1        (0x47C)
+#define DVFSRC_RECORD_2_L_2        (0x480)
+#define DVFSRC_RECORD_3_L_0        (0x484)
+#define DVFSRC_RECORD_3_L_1        (0x488)
+#define DVFSRC_RECORD_3_L_2        (0x48C)
+#define DVFSRC_RECORD_4_L_0        (0x490)
+#define DVFSRC_RECORD_4_L_1        (0x494)
+#define DVFSRC_RECORD_4_L_2        (0x498)
+#define DVFSRC_RECORD_5_L_0        (0x49C)
+#define DVFSRC_RECORD_5_L_1        (0x4A0)
+#define DVFSRC_RECORD_5_L_2        (0x4A4)
+#define DVFSRC_RECORD_6_L_0        (0x4A8)
+#define DVFSRC_RECORD_6_L_1        (0x4AC)
+#define DVFSRC_RECORD_6_L_2        (0x4B0)
+#define DVFSRC_RECORD_7_L_0        (0x4B4)
+#define DVFSRC_RECORD_7_L_1        (0x4B8)
+#define DVFSRC_RECORD_7_L_2        (0x4BC)
+#define DVFSRC_RECORD_MD_0         (0x4C0)
+#define DVFSRC_RECORD_MD_1         (0x4C4)
+#define DVFSRC_RECORD_MD_2         (0x4C8)
+#define DVFSRC_RECORD_MD_3         (0x4CC)
+#define DVFSRC_RECORD_MD_4         (0x4D0)
+#define DVFSRC_RECORD_MD_5         (0x4D4)
+#define DVFSRC_RECORD_MD_6         (0x4D8)
+#define DVFSRC_RECORD_MD_7         (0x4DC)
+#define DVFSRC_RECORD_COUNT        (0x4F0)
+#define DVFSRC_RSRV_0              (0x600)
+#define DVFSRC_RSRV_1              (0x604)
+#define DVFSRC_RSRV_2              (0x608)
+#define DVFSRC_RSRV_3              (0x60C)
+#define DVFSRC_RSRV_4              (0x610)
+#define DVFSRC_RSRV_5              (0x614)
+
+static int dvfsrc_lp4x_2ch_3600[][128] = {
+		{ DVFSRC_EMI_REQUEST,		0x00240009 },
+		{ DVFSRC_EMI_REQUEST3,		0x09000000 },
+		{ DVFSRC_EMI_HRT,		0x003E362C },
+		{ DVFSRC_EMI_QOS0,		0x00000033 },
+		{ DVFSRC_EMI_QOS1,		0x0000004C },
+		{ DVFSRC_EMI_MD2SPM0,		0x0000003F },
+		{ DVFSRC_EMI_MD2SPM1,		0x00000000 },
+		{ DVFSRC_EMI_MD2SPM2,		0x000080C0 },
+		{ DVFSRC_EMI_MD2SPM0_T,		0x00000007 },
+		{ DVFSRC_EMI_MD2SPM1_T,		0x00000038 },
+		{ DVFSRC_EMI_MD2SPM2_T,		0x000080C0 },
+
+		{ DVFSRC_VCORE_HRT,		0x00000036 },
+
+		{ DVFSRC_MD_SW_CONTROL,		0x20000000 },
+
+		{ DVFSRC_TIMEOUT_NEXTREQ,	0x00000014 },
+		{ DVFSRC_INT_EN,		0x00000003 },
+
+		{ DVFSRC_LEVEL_LABEL_0_1,	0x00010000 },
+		{ DVFSRC_LEVEL_LABEL_2_3,	0x00020101 },
+		{ DVFSRC_LEVEL_LABEL_4_5,	0x01020012 },
+		{ DVFSRC_LEVEL_LABEL_6_7,	0x02120112 },
+		{ DVFSRC_LEVEL_LABEL_8_9,	0x00230013 },
+		{ DVFSRC_LEVEL_LABEL_10_11,	0x01230113 },
+		{ DVFSRC_LEVEL_LABEL_12_13,	0x02230213 },
+		{ DVFSRC_LEVEL_LABEL_14_15,	0x03230323 },
+
+		{ DVFSRC_FORCE,			0x40000000 },
+		{ DVFSRC_RSRV_1,		0x0000000C },
+
+		{ DVFSRC_QOS_EN,		0x0000407F },
+
+		{ DVFSRC_BASIC_CONTROL,		0x0000407B },
+		{ DVFSRC_BASIC_CONTROL,		0x0000017B },
+		{ DVFSRC_FORCE,			0x00000000 },
+
+		{ -1, 0 },
+};
+
 static int mtk_dvfsrc_probe(struct platform_device *pdev)
 {
 	struct arm_smccc_res ares;
 	struct mtk_dvfsrc *dvfsrc;
-	int ret;
+	struct device_node *np;
+	struct regmap *regmap;
+	int ret, val;
 
 	dvfsrc = devm_kzalloc(&pdev->dev, sizeof(*dvfsrc), GFP_KERNEL);
 	if (!dvfsrc)
@@ -448,12 +650,51 @@ static int mtk_dvfsrc_probe(struct platform_device *pdev)
 	if (IS_ERR(dvfsrc->regs))
 		return PTR_ERR(dvfsrc->regs);
 
-	arm_smccc_smc(MTK_SIP_DVFSRC_VCOREFS_CONTROL, MTK_SIP_DVFSRC_INIT,
-		      0, 0, 0, 0, 0, 0, &ares);
-	if (ares.a0)
-		return dev_err_probe(&pdev->dev, -EINVAL, "DVFSRC init failed: %lu\n", ares.a0);
+	np = of_parse_phandle(pdev->dev.of_node, "mediatek,rgu", 0);
 
-	dvfsrc->dram_type = ares.a1;
+	if (!np) {
+		arm_smccc_smc(MTK_SIP_DVFSRC_VCOREFS_CONTROL, MTK_SIP_DVFSRC_INIT,
+		      0, 0, 0, 0, 0, 0, &ares);
+		if (ares.a0)
+			return dev_err_probe(&pdev->dev, -EINVAL, "DVFSRC init failed: %lu\n", ares.a0);
+
+		dvfsrc->dram_type = ares.a1;
+	} else {
+		regmap = syscon_node_to_regmap(np);
+
+		/* mtk_rgu_cfg_dvfsrc(1) */
+		ret = regmap_read(regmap, 0xA0, &val);
+		if (ret)
+			return dev_err_probe(&pdev->dev, ret, "Failed to read MTK_WDT_DEBUG_CTL2\n");
+
+		ret = regmap_write(regmap, 0xA0, val | BIT(9) | 0x55000000);
+		if (ret)
+			return dev_err_probe(&pdev->dev, ret, "Failed to write to MTK_WDT_DEBUG_CTL2\n");
+
+		ret = regmap_read(regmap, 0x44, &val);
+		if (ret)
+			return dev_err_probe(&pdev->dev, ret, "Failed to read MTK_WDT_LATCH_CTL\n");
+
+		ret = regmap_write(regmap, 0x44, val | BIT(13) | 0x95000000);
+		if (ret)
+			return dev_err_probe(&pdev->dev, ret, "Failed to write to MTK_WDT_LATCH_CTL\n");
+
+		/* helio_dvfsrc_sram_reg_init() */
+		for (val = 0; val < 0x80; val += 4)
+			writel_relaxed(0, dvfsrc->regs + val);
+
+		/* helio_dvfsrc_reg_config() */
+		val = 0;
+		while (dvfsrc_lp4x_2ch_3600[val][0] != 0) {
+			writel(dvfsrc_lp4x_2ch_3600[val][1], dvfsrc->regs + dvfsrc_lp4x_2ch_3600[val][0]);
+			val++;
+		}
+
+		dvfsrc->dram_type = 0;
+
+		dev_info(&pdev->dev, "DVFSRC should be ready now...\n");
+	}
+
 	dev_dbg(&pdev->dev, "DRAM Type: %d\n", dvfsrc->dram_type);
 
 	dvfsrc->curr_opps = &dvfsrc->dvd->opps_desc[dvfsrc->dram_type];
@@ -464,8 +705,12 @@ static int mtk_dvfsrc_probe(struct platform_device *pdev)
 		return dev_err_probe(&pdev->dev, ret, "Failed to populate child devices\n");
 
 	/* Everything is set up - make it run! */
-	arm_smccc_smc(MTK_SIP_DVFSRC_VCOREFS_CONTROL, MTK_SIP_DVFSRC_START,
+	if (!np)
+		arm_smccc_smc(MTK_SIP_DVFSRC_VCOREFS_CONTROL, MTK_SIP_DVFSRC_START,
 		      0, 0, 0, 0, 0, 0, &ares);
+	else
+		/* helio_dvfsrc_enable(1) */
+		arm_smccc_smc(0x82000226 | 0x40000000, BIT(3) | BIT(10), 0, 0, 0, 0, 0, 0, &ares); // MTK_SIP_KERNEL_SPM_VCOREFS_ARGS, SPM_FLAG_DIS_VCORE_DVS | SPM_FLAG_RUN_COMMON_SCENARIO
 	if (ares.a0)
 		return dev_err_probe(&pdev->dev, -EINVAL, "Cannot start DVFSRC: %lu\n", ares.a0);
 
