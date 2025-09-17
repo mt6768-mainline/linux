@@ -46,6 +46,18 @@
 	regulator-always-on;
 };
 
+/* mt6358_vaud28_reg - audio */
+/* mt6358_vbif28_reg - bluetooth? */
+
+&mt6358_vio28_reg {
+	regulator-always-on;
+};
+
+// I guess
+&mt6358_vaux18_reg {
+	regulator-always-on;
+};
+
 &cci {
 	proc-supply = <&mt6358_vproc12_reg>;
 };
