@@ -22,12 +22,14 @@ properties:
       - items:
           - enum:
               - mediatek,mt2712-uart-dma
-              - mediatek,mt6795-uart-dma
               - mediatek,mt8365-uart-dma
               - mediatek,mt8516-uart-dma
           - const: mediatek,mt6577-uart-dma
       - enum:
-          - mediatek,mt6577-uart-dma
+          - mediatek,mt6577-uart-dma  # 32 bits
+          - mediatek,mt6795-uart-dma  # 33 bits
+          - mediatek,mt6779-uart-dma  # 34 bits
+          - mediatek,mt6985-uart-dma  # 35 bits
 
   reg:
     minItems: 1
@@ -55,10 +57,6 @@ properties:
     description: |
       Number of virtual channels of the UART APDMA controller
     maximum: 16
-
-  mediatek,dma-33bits:
-    type: boolean
-    description: Enable 33-bits UART APDMA support
 
 required:
   - compatible
@@ -116,7 +114,6 @@ examples:
             dma-requests = <12>;
             clocks = <&pericfg CLK_PERI_AP_DMA>;
             clock-names = "apdma";
-            mediatek,dma-33bits;
             #dma-cells = <1>;
         };
     };
