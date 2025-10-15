@@ -1,0 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Device Tree Source for Xiaomi Redmi 9 with Tianma NT36672A panel and Kinetic KTD3137 backlight
+ */
+
+/dts-v1/;
+
+#include "mt6769t-xiaomi-common.dtsi"
+#include "mt6769t-xiaomi-lancelot-tianma.dtsi"
+#include "mt6769t-xiaomi-lancelot-ktd.dtsi"
+

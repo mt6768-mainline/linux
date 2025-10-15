@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Common Device Tree Source for Xiaomi Redmi 9 with Tianma NT36672A panel
+ */
+
+&dsi0 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	panel: panel@0 {
+		compatible = "tianma,nt36672a-xiaomi-galahad-simple";
+		reg = <0>;
+		power-supply = <&mt6358_vio18_reg>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dsi_out>;
+			};
+		};
+	};
+};
+
+&spi0 {
+       status = "okay";
+       #address-cells = <1>;
+       #size-cells = <0>;
+       mediatek,pad-select = <0>;
+
+       touchscreen@0 {
+               compatible = "novatek,nt36672a-ts";
+               reg = <0>;
+
+               firmware-name = "ts.bin";
+
+               interrupts-extended = <&pio 1 IRQ_TYPE_EDGE_RISING>;
+               reset-gpios = <&pio 92 GPIO_ACTIVE_HIGH>;
+               panel = <&panel>;
+
+               spi-cs-setup-delay-ns = <20>;
+               spi-max-frequency = <8000000>;
+       };
+};

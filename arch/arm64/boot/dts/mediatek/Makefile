@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt2712-evb.dtb
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt6755-evb.dtb
+dtb-$(CONFIG_ARCH_MEDIATEK) += mt6769t-xiaomi-lancelot-huaxing-ktd.dtb
+dtb-$(CONFIG_ARCH_MEDIATEK) += mt6769t-xiaomi-lancelot-tianma-ktd.dtb
+dtb-$(CONFIG_ARCH_MEDIATEK) += mt6769t-xiaomi-lancelot-tianma-ti.dtb
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt6769z-motorola-penangf.dtb
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt6769z-motorola-penangf-minimal-dtbo.dtb
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt6769z-xiaomi-merlin.dtb

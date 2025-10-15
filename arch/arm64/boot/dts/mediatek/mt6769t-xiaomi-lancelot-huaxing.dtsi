@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Common Device Tree Source for Xiaomi Redmi 9 with Huaxing FT8719 panel
+ */
+
+&dsi0 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	panel: panel@0 {
+		// TODO
+		compatible = "focaltech,ft8719";
+		reg = <0>;
+		power-supply = <&mt6358_vio18_reg>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dsi_out>;
+			};
+		};
+	};
+};

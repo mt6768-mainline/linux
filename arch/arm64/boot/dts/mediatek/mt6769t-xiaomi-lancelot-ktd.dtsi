@@ -1,0 +1,29 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Common Device Tree Source for Xiaomi Redmi 9 with Kinetic KTD3137 backlight
+ */
+
+&i2c0 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	clock-frequency = <400000>;
+
+	backlight: backlight@36 {
+		compatible = "kinetic,ktd3137";
+		reg = <0x36>;
+		ktd,lsb;
+		ktd,linear;
+		ktd,pwm-frequency = <0x64>;
+		ktd,led-current = <0x98>;
+		ktd,ramp-on-timing = <0x00>;
+		ktd,ramp-off-timing = <0x00>;
+		ktd,pwm-transition = <0x00>;
+		ktd,i2c-transition = <0x00>;
+		ktd,channel = <0x02>;
+		ktd,ovp-level = <0x20>;
+		ktd,switching-frequency = <0x3e8>;
+		ktd,inductor-current = <0xa28>;
+		ktd,flash-timeout = <0x00>;
+	};
+};
