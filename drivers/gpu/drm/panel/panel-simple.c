@@ -5715,6 +5715,36 @@ static const struct panel_desc_dsi icnl9916_chipone_penangf = {
     .lanes = 4,
 };
 
+static const struct drm_display_mode ft8719_fhdp_lancelot_mode = {
+	.clock = (1080 + 45 + 4 + 20) * (2340 + 112 + 4 + 26) * 60 / 1000,
+	.hdisplay = 1080,
+	.hsync_start = 1080 + 45,
+	.hsync_end = 1080 + 45 + 4,
+	.htotal = 1080 + 45 + 4 + 20,
+	.vdisplay = 2340,
+	.vsync_start = 2340 + 112,
+	.vsync_end = 2340 + 112 + 4,
+	.vtotal = 2340 + 112 + 4 + 26,
+	.width_mm = 69,
+	.height_mm = 151,
+};
+
+static const struct panel_desc_dsi ft8719_fhdp_lancelot = {
+	.desc = {
+		.modes = &ft8719_fhdp_lancelot_mode,
+		.num_modes = 1,
+		.bpc = 8,
+		.size = {
+			.width = 69,
+			.height = 151,
+		},
+		.connector_type = DRM_MODE_CONNECTOR_DSI,
+	},
+	.flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE,
+	.format = MIPI_DSI_FMT_RGB888,
+	.lanes = 4,
+};
+
 static const struct of_device_id dsi_of_match[] = {
 	{
 		.compatible = "auo,b080uan01",
@@ -5743,6 +5773,9 @@ static const struct of_device_id dsi_of_match[] = {
 	}, {
 		.compatible = "chipone,icnl9916",
 		.data = &icnl9916_chipone_penangf
+	}, {
+		.compatible = "focaltech,ft8719",
+		.data = &ft8719_fhdp_lancelot
 	}, {
 		/* sentinel */
 	}
