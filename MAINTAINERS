@@ -14963,6 +14963,7 @@ KTD3137 BACKLIGHT DRIVER
 M:	Roman Vivchar <rva333@protonmail.com>
 S:	Maintained
 F:	Documentation/devicetree/bindings/leds/backlight/kinetic,ktd3137.yaml
+F:	drivers/video/backlight/ktd3137.c
 
 KTEST
 M:	Steven Rostedt <rostedt@goodmis.org>
