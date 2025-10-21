@@ -190,6 +190,14 @@ config BACKLIGHT_KTD2801
 	  Say Y to enable the backlight driver for the Kinetic KTD2801 1-wire
 	  GPIO-controlled backlight found in Samsung Galaxy Core Prime VE LTE.
 
+config BACKLIGHT_KTD3137
+	tristate "Backlight Driver for Kinetic KTD3137"
+	depends on I2C
+	select REGMAP_I2C
+	help
+		Say Y to enable the backlight driver for the Kinetic KTD3137
+		found in various Xiaomi smartphones.
+
 config BACKLIGHT_KTZ8866
 	tristate "Backlight Driver for Kinetic KTZ8866"
 	depends on I2C
