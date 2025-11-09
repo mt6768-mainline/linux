@@ -187,6 +187,16 @@ config POWER_RESET_MT6323
 
 	  Say Y if you have a board where MT6323 could be found.
 
+config POWER_RESET_MT6358
+	bool "MediaTek MT6358 power-off driver"
+	depends on MFD_MT6397
+	help
+	  The power-off driver is responsible for externally shutdown down
+	  the power of a remote MediaTek SoC MT6358 is connected to through
+	  controlling a tiny circuit BBPU inside MT6358 RTC.
+
+	  Say Y if you have a board where MT6358 could be found.
+
 config POWER_RESET_QNAP
 	bool "QNAP power-off driver"
 	depends on OF_GPIO && PLAT_ORION

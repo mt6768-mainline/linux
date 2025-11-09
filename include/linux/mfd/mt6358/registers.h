@@ -75,6 +75,7 @@
 #define MT6358_RTC_SEC_WRTGR                  0x618
 #define MT6358_PSC_TOP_INT_CON0               0x910
 #define MT6358_PSC_TOP_INT_STATUS0            0x91c
+#define MT6358_RG_PPCCTL0                     0xa08
 #define MT6358_BM_TOP_INT_CON0                0xc32
 #define MT6358_BM_TOP_INT_CON1                0xc38
 #define MT6358_BM_TOP_INT_STATUS0             0xc4a
