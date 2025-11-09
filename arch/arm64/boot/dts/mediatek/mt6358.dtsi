@@ -356,5 +356,9 @@
 				linux,keycodes = <KEY_HOME>;
 			};
 		};
+
+		power-controller {
+			compatible = "mediatek,mt6358-pwrc";
+		};
 	};
 };
