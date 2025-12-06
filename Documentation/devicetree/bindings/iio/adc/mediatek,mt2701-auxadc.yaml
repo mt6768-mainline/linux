@@ -60,6 +60,16 @@ properties:
   "#io-channel-cells":
     const: 1
 
+  nvmem-cells:
+    items:
+      - description:
+          NVMEM cell with EEPROMA phandle to the calibration data provided by an
+          NVMEM device. If unspecified default values shall be used.
+
+  nvmem-cell-names:
+    items:
+      - const: calibration-data
+
 additionalProperties: false
 
 required:
