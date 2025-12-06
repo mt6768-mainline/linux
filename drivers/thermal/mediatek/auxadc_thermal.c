@@ -142,6 +142,12 @@
 
 /*
  * Layout of the fuses providing the calibration data
+ * These macros could be used for MT67XX and MT68XX.
+ */
+#define CALIB_BUF1_ADC_OE_V1_5(x)	(((x) >> 12) & 0x3ff)
+
+/*
+ * Layout of the fuses providing the calibration data
  * These macros could be used for MT7622.
  */
 #define CALIB_BUF0_ADC_OE_V2(x)		(((x) >> 22) & 0x3ff)
@@ -180,6 +186,7 @@ enum {
 
 enum mtk_thermal_version {
 	MTK_THERMAL_V1 = 1,
+	MTK_THERMAL_V1_5,
 	MTK_THERMAL_V2,
 	MTK_THERMAL_V3,
 };
@@ -724,6 +731,37 @@ static int raw_to_mcelsius_v1(struct mtk_thermal *mt, int sensno, s32 raw)
 	return mt->degc_cali * 500 - tmp;
 }
 
+static int raw_to_mcelsius_v1_5(struct mtk_thermal *mt, int sensno, s32 raw)
+{
+	s32 format_1;
+	s32 format_2;
+	s32 g_oe;
+	s32 g_gain;
+	s32 g_x_roomt;
+	s32 tmp;
+
+	if (raw == 0)
+		return 0;
+
+	raw &= 0xfff;
+	g_gain = 10000 + (((mt->adc_ge - 512) * 10000) >> 12);
+	g_oe = mt->adc_oe - 512;
+	format_1 = mt->vts[sensno] + 3350 - g_oe;
+	format_2 = (mt->degc_cali * 10) >> 1;
+	g_x_roomt = (((format_1 * 10000) >> 12) * 10000) / g_gain;
+
+	tmp = (((((raw - g_oe) * 10000) >> 12) * 10000) / g_gain) - g_x_roomt;
+	tmp = tmp * 15 / 18;
+
+	if (mt->o_slope_sign == 0)
+		tmp = (tmp * 1000) / (1528 + mt->o_slope * 10);
+	else
+		tmp = (tmp * 1000) / (1528 - mt->o_slope * 10);
+
+	tmp = tmp - (tmp << 1);
+	return (format_2 + tmp) * 100;
+}
+
 static int raw_to_mcelsius_v2(struct mtk_thermal *mt, int sensno, s32 raw)
 {
 	s32 format_1;
@@ -930,7 +968,8 @@ static void mtk_thermal_init_bank(struct mtk_thermal *mt, int num,
 	writel(auxadc_phys_base + AUXADC_CON1_CLR_V,
 	       controller_base + TEMP_ADCMUXADDR);
 
-	if (mt->conf->version == MTK_THERMAL_V1) {
+	if (mt->conf->version == MTK_THERMAL_V1 || 
+	    mt->conf->version == MTK_THERMAL_V1_5) {
 		/* AHB address for pnp sensor mux selection */
 		writel(apmixed_phys_base + APMIXED_SYS_TS_CON1,
 		       controller_base + TEMP_PNPMUXADDR);
@@ -1034,6 +1073,50 @@ static int mtk_thermal_extract_efuse_v1(struct mtk_thermal *mt, u32 *buf)
 	return 0;
 }
 
+static int mtk_thermal_extract_efuse_v1_5(struct mtk_thermal *mt, u32 *buf)
+{
+	int i;
+
+	if (!(buf[0] & CALIB_BUF0_VALID_V1))
+		return -EINVAL;
+
+	mt->adc_ge = CALIB_BUF1_ADC_GE_V1(buf[1]);
+	mt->adc_oe = CALIB_BUF1_ADC_OE_V1_5(buf[1]);
+
+	for (i = 0; i < mt->conf->num_sensors; i++) {
+		switch (mt->conf->vts_index[i]) {
+		case VTS1:
+			mt->vts[VTS1] = CALIB_BUF0_VTS_TS1_V1(buf[0]);
+			break;
+		case VTS2:
+			mt->vts[VTS2] = CALIB_BUF0_VTS_TS2_V1(buf[0]);
+			break;
+		case VTS3:
+			mt->vts[VTS3] = CALIB_BUF1_VTS_TS3_V1(buf[1]);
+			break;
+		case VTS4:
+			mt->vts[VTS4] = CALIB_BUF2_VTS_TS4_V1(buf[2]);
+			break;
+		case VTS5:
+			mt->vts[VTS5] = CALIB_BUF2_VTS_TS5_V1(buf[2]);
+			break;
+		case VTSABB:
+			mt->vts[VTSABB] =
+				CALIB_BUF2_VTS_TSABB_V1(buf[2]);
+			break;
+		default:
+			break;
+		}
+	}
+
+	mt->degc_cali = CALIB_BUF0_DEGC_CALI_V1(buf[0]);
+	mt->o_slope_sign = CALIB_BUF0_O_SLOPE_SIGN_V1(buf[0]);
+	if (CALIB_BUF1_ID_V1(buf[1]))
+		mt->o_slope = CALIB_BUF0_O_SLOPE_V1(buf[0]);
+
+	return 0;
+}
+
 static int mtk_thermal_extract_efuse_v2(struct mtk_thermal *mt, u32 *buf)
 {
 	if (!CALIB_BUF1_VALID_V2(buf[1]))
@@ -1109,6 +1192,9 @@ static int mtk_thermal_get_calibration_data(struct device *dev,
 	switch (mt->conf->version) {
 	case MTK_THERMAL_V1:
 		ret = mtk_thermal_extract_efuse_v1(mt, buf);
+		break;
+	case MTK_THERMAL_V1_5:
+		ret = mtk_thermal_extract_efuse_v1_5(mt, buf);
 		break;
 	case MTK_THERMAL_V2:
 		ret = mtk_thermal_extract_efuse_v2(mt, buf);
@@ -1270,11 +1356,14 @@ static int mtk_thermal_probe(struct platform_device *pdev)
 
 	mtk_thermal_turn_on_buffer(mt, apmixed_base);
 
-	if (mt->conf->version != MTK_THERMAL_V1)
+	if (mt->conf->version != MTK_THERMAL_V1 &&
+	    mt->conf->version != MTK_THERMAL_V1_5)
 		mtk_thermal_release_periodic_ts(mt, auxadc_base);
 
 	if (mt->conf->version == MTK_THERMAL_V1)
 		mt->raw_to_mcelsius = raw_to_mcelsius_v1;
+	else if (mt->conf->version == MTK_THERMAL_V1_5)
+		mt->raw_to_mcelsius = raw_to_mcelsius_v1_5;
 	else if (mt->conf->version == MTK_THERMAL_V2)
 		mt->raw_to_mcelsius = raw_to_mcelsius_v2;
 	else
