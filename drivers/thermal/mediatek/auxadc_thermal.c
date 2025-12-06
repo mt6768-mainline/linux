@@ -885,21 +885,13 @@ static int mtk_thermal_bank_temperature(struct mtk_thermal_bank *bank)
 
 static int mtk_read_temp(struct thermal_zone_device *tz, int *temperature)
 {
-	struct mtk_thermal *mt = thermal_zone_device_priv(tz);
-	int i;
-	int tempmax = INT_MIN;
+	struct mtk_thermal_bank *bank = thermal_zone_device_priv(tz);
 
-	for (i = 0; i < mt->conf->num_banks; i++) {
-		struct mtk_thermal_bank *bank = &mt->banks[i];
+	mtk_thermal_get_bank(bank);
 
-		mtk_thermal_get_bank(bank);
+	*temperature = mtk_thermal_bank_temperature(bank);
 
-		tempmax = max(tempmax, mtk_thermal_bank_temperature(bank));
-
-		mtk_thermal_put_bank(bank);
-	}
-
-	*temperature = tempmax;
+	mtk_thermal_put_bank(bank);
 
 	return 0;
 }
@@ -1374,14 +1366,18 @@ static int mtk_thermal_probe(struct platform_device *pdev)
 			mtk_thermal_init_bank(mt, i, apmixed_phys_base,
 					      auxadc_phys_base, ctrl_id);
 
-	tzdev = devm_thermal_of_zone_register(&pdev->dev, 0, mt,
-					      &mtk_thermal_ops);
-	if (IS_ERR(tzdev))
-		return PTR_ERR(tzdev);
+	for (i = 0; i < mt->conf->num_banks; i++) {
+		struct mtk_thermal_bank *bank = &mt->banks[i];
 
-	ret = devm_thermal_add_hwmon_sysfs(&pdev->dev, tzdev);
-	if (ret)
-		dev_warn(&pdev->dev, "error in thermal_add_hwmon_sysfs");
+		tzdev = devm_thermal_of_zone_register(&pdev->dev, i, bank,
+						      &mtk_thermal_ops);
+		if (IS_ERR(tzdev))
+			return PTR_ERR(tzdev);
+
+		ret = devm_thermal_add_hwmon_sysfs(&pdev->dev, tzdev);
+		if (ret)
+			dev_warn(&pdev->dev, "error in thermal_add_hwmon_sysfs");
+	}
 
 	return 0;
 }
