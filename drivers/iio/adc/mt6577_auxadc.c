@@ -9,6 +9,7 @@
 #include <linux/err.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/nvmem-consumer.h>
 #include <linux/platform_device.h>
 #include <linux/property.h>
 #include <linux/iopoll.h>
@@ -36,12 +37,22 @@
 struct mtk_auxadc_compatible {
 	bool sample_data_cali;
 	bool check_global_idle;
+	u32 cali_en_bit;
+	u32 cali_ge_bit;
+	u32 cali_oe_bit;
+};
+
+struct mt6577_adc_cali_info {
+	bool cali_en;
+	u32 cali_ge;
+	u32 cali_oe;
 };
 
 struct mt6577_auxadc_device {
 	void __iomem *reg_base;
 	struct clk *adc_clk;
 	struct mutex lock;
+	struct mt6577_adc_cali_info cali;
 	const struct mtk_auxadc_compatible *dev_comp;
 };
 
@@ -58,6 +69,9 @@ static const struct mtk_auxadc_compatible mt8173_compat = {
 static const struct mtk_auxadc_compatible mt6765_compat = {
 	.sample_data_cali = true,
 	.check_global_idle = false,
+	.cali_en_bit = 20,
+	.cali_ge_bit = 10,
+	.cali_oe_bit = 0,
 };
 
 #define MT6577_AUXADC_CHANNEL(idx) {				    \
@@ -90,9 +104,43 @@ static const struct iio_chan_spec mt6577_auxadc_iio_channels[] = {
 #define VOLTAGE_FULL_RANGE  1500	/* VA voltage */
 #define AUXADC_PRECISE      4096	/* 12 bits */
 
-static int mt_auxadc_get_cali_data(int rawdata, bool enable_cali)
+/* For calibration */
+#define ADC_GE_OE_MASK      0x000003ff
+#define ADC_GE_OE_EN_MASK   0x00000001
+
+static int mt6577_auxadc_update_cali(struct device *dev)
 {
-	return rawdata;
+	struct iio_dev *indio_dev = dev_get_drvdata(dev);
+	struct mt6577_auxadc_device *adc_dev = iio_priv(indio_dev);
+	struct mt6577_adc_cali_info *adc_cali = &adc_dev->cali;
+	u32 val;
+	int ret;
+
+	ret = nvmem_cell_read_u32(dev, "calibration-data", &val);
+	if (ret)
+		return ret;
+
+	adc_cali->cali_en = (val >> adc_dev->dev_comp->cali_en_bit)
+			 & ADC_GE_OE_EN_MASK;
+	if (adc_cali->cali_en) {
+		adc_cali->cali_oe =
+			((val >> adc_dev->dev_comp->cali_oe_bit) &
+			 ADC_GE_OE_MASK) - 512;
+		adc_cali->cali_ge =
+			((val >> adc_dev->dev_comp->cali_ge_bit) &
+			 ADC_GE_OE_MASK) - 512;
+	} else {
+		dev_info(dev, "Device not calibrated, using default calibration values\n");
+	}
+
+	return ret;
+}
+
+static int mt6577_auxadc_get_cali_data(struct mt6577_adc_cali_info *adc_cali,
+					 int rawdata)
+{
+	return (AUXADC_PRECISE * (rawdata - adc_cali->cali_oe)) /
+			(AUXADC_PRECISE + adc_cali->cali_ge);
 }
 
 static inline void mt6577_auxadc_mod_reg(void __iomem *reg,
@@ -197,8 +245,8 @@ static int mt6577_auxadc_read_raw(struct iio_dev *indio_dev,
 				chan->channel);
 			return *val;
 		}
-		if (adc_dev->dev_comp->sample_data_cali)
-			*val = mt_auxadc_get_cali_data(*val, true);
+		if (adc_dev->dev_comp->sample_data_cali && adc_dev->cali.cali_en)
+			*val = mt6577_auxadc_get_cali_data(&adc_dev->cali, *val);
 
 		/* Convert adc raw data to voltage: 0 - 1500 mV */
 		*val = *val * VOLTAGE_FULL_RANGE / AUXADC_PRECISE;
@@ -301,6 +349,12 @@ static int mt6577_auxadc_probe(struct platform_device *pdev)
 	ret = devm_iio_device_register(&pdev->dev, indio_dev);
 	if (ret < 0)
 		return dev_err_probe(&pdev->dev, ret, "failed to register iio device\n");
+
+	if (adc_dev->dev_comp->sample_data_cali) {
+		ret = mt6577_auxadc_update_cali(&pdev->dev);
+		if (ret)
+			return ret;
+	}
 
 	return 0;
 }
