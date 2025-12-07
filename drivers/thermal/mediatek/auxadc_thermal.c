@@ -134,6 +134,9 @@
 #define CALIB_BUF1_VTS_TS3_V1(x)	(((x) >> 0) & 0x1ff)
 #define CALIB_BUF2_VTS_TS4_V1(x)	(((x) >> 23) & 0x1ff)
 #define CALIB_BUF2_VTS_TS5_V1(x)	(((x) >> 5) & 0x1ff)
+#define CALIB_BUF3_VTS_TS6_V1(x)	(((x) >> 0) & 0x1ff)
+#define CALIB_BUF3_VTS_TS7_V1(x)	(((x) >> 9) & 0x1ff)
+#define CALIB_BUF3_VTS_TS8_V1(x)	(((x) >> 18) & 0x1ff)
 #define CALIB_BUF2_VTS_TSABB_V1(x)	(((x) >> 14) & 0x1ff)
 #define CALIB_BUF0_DEGC_CALI_V1(x)	(((x) >> 1) & 0x3f)
 #define CALIB_BUF0_O_SLOPE_V1(x)	(((x) >> 26) & 0x3f)
@@ -180,6 +183,9 @@ enum {
 	VTS3,
 	VTS4,
 	VTS5,
+	VTS6,
+	VTS7,
+	VTS8,
 	VTSABB,
 	MAX_NUM_VTS,
 };
@@ -231,6 +237,31 @@ enum mtk_thermal_version {
 
 /* The calibration coefficient of sensor  */
 #define MT2712_CALIBRATION	165
+
+/* MT6768 thermal sensors */
+#define MT6768_TS1	0
+#define MT6768_TS2	1
+#define MT6768_TS3	2
+#define MT6768_TS4	3
+#define MT6768_TS5	4
+#define MT6768_TS6	5
+#define MT6768_TS7	6
+#define MT6768_TS8	7
+
+/* AUXADC channel  is used for the temperature sensors */
+#define MT6768_TEMP_AUXADC_CHANNEL	11
+
+/* The total number of temperature sensors in the MT6768 */
+#define MT6768_NUM_SENSORS	8
+
+/* The number of banks in the MT6768 */
+#define MT6768_NUM_ZONES               5
+
+/* The number of sensing points per bank */
+#define MT6768_NUM_SENSORS_PER_ZONE	 4
+
+/* The number of controller in the MT6768 */
+#define MT6768_NUM_CONTROLLER		3
 
 #define MT7622_TEMP_AUXADC_CHANNEL	11
 #define MT7622_NUM_SENSORS		1
@@ -401,6 +432,31 @@ static const int mt8173_vts_index[MT8173_NUM_SENSORS] = {
 	VTS1, VTS2, VTS3, VTS4, VTSABB
 };
 
+/* MT6768 thermal sensor data */
+static const int mt6768_bank_data[MT6768_NUM_SENSORS][MT6768_NUM_SENSORS_PER_ZONE] = {
+	{ MT6768_TS4, MT6768_TS5, MT6768_TS6 },
+	{ MT6768_TS7, MT6768_TS8 },
+	{ MT6768_TS5, MT6768_TS6, MT6768_TS7, MT6768_TS8 },
+	{ MT6768_TS2 },
+	{ MT6768_TS3 }
+};
+
+static const int mt6768_msr[MT6768_NUM_SENSORS_PER_ZONE] = {
+	TEMP_MSR0, TEMP_MSR1, TEMP_MSR2, TEMP_MSR3
+};
+
+static const int mt6768_adcpnp[MT6768_NUM_SENSORS_PER_ZONE] = {
+	TEMP_ADCPNP0, TEMP_ADCPNP1, TEMP_ADCPNP2, TEMP_ADCPNP3,
+};
+
+static const int mt6768_mux_values[MT6768_NUM_SENSORS] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+static const int mt6768_tc_offset[MT6768_NUM_CONTROLLER] = {0x0, 0x100, 0x200};
+
+static const int mt6768_vts_index[MT6768_NUM_SENSORS] = {
+	VTS1, VTS2, VTS3, VTS4, VTS5, VTS6, VTS7, VTS8
+};
+
+
 /* MT2701 thermal sensor data */
 static const int mt2701_bank_data[MT2701_NUM_SENSORS] = {
 	MT2701_TS1, MT2701_TS2, MT2701_TSABB
@@ -547,6 +603,46 @@ static const struct mtk_thermal_data mt2701_thermal_data = {
 	.adcpnp = mt2701_adcpnp,
 	.sensor_mux_values = mt2701_mux_values,
 	.version = MTK_THERMAL_V1,
+};
+
+static const struct mtk_thermal_data mt6768_thermal_data = {
+	.auxadc_channel = MT6768_TEMP_AUXADC_CHANNEL,
+	.num_banks = MT6768_NUM_ZONES,
+	.num_sensors = MT6768_NUM_SENSORS,
+	.vts_index = mt6768_vts_index,
+	.num_controller = MT6768_NUM_CONTROLLER,
+	.controller_offset = mt6768_tc_offset,
+	.need_switch_bank = false,
+	.bank_data = {
+		{
+			.num_sensors = 3,
+			.sensors = mt6768_bank_data[0],
+		},
+		{
+			.num_sensors = 2,
+			.sensors = mt6768_bank_data[1],
+		},
+		{
+			.num_sensors = 4,
+			.sensors = mt6768_bank_data[2],
+		},
+		{
+			.num_sensors = 1,
+			.sensors = mt6768_bank_data[3],
+		},
+		{
+			.num_sensors = 1,
+			.sensors = mt6768_bank_data[4],
+		},
+	},
+
+	.msr = mt6768_msr,
+	.adcpnp = mt6768_adcpnp,
+	.sensor_mux_values = mt6768_mux_values,
+	.version = MTK_THERMAL_V1_5,
+	.apmixed_buffer_ctl_reg = APMIXED_SYS_TS_CON0,
+	.apmixed_buffer_ctl_mask = (u32) ~0x30000000,
+	.apmixed_buffer_ctl_set = 0b11,
 };
 
 /*
@@ -1092,6 +1188,15 @@ static int mtk_thermal_extract_efuse_v1_5(struct mtk_thermal *mt, u32 *buf)
 		case VTS5:
 			mt->vts[VTS5] = CALIB_BUF2_VTS_TS5_V1(buf[2]);
 			break;
+		case VTS6:
+			mt->vts[VTS6] = CALIB_BUF3_VTS_TS6_V1(buf[14]);
+			break;
+		case VTS7:
+			mt->vts[VTS7] = CALIB_BUF3_VTS_TS7_V1(buf[14]);
+			break;
+		case VTS8:
+			mt->vts[VTS8] = CALIB_BUF3_VTS_TS8_V1(buf[14]);
+			break;
 		case VTSABB:
 			mt->vts[VTSABB] =
 				CALIB_BUF2_VTS_TSABB_V1(buf[2]);
@@ -1222,6 +1327,10 @@ static const struct of_device_id mtk_thermal_of_match[] = {
 	{
 		.compatible = "mediatek,mt2712-thermal",
 		.data = (void *)&mt2712_thermal_data,
+	},
+	{
+		.compatible = "mediatek,mt6768-thermal",
+		.data = (void *)&mt6768_thermal_data,
 	},
 	{
 		.compatible = "mediatek,mt7622-thermal",
