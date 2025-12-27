@@ -49,6 +49,20 @@
 			default-state = "off";
 		};
 	};
+
+	irled {
+		compatible = "pwm-ir-tx";
+		pwms = <&pwm1 0 1000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&ir_pins>;
+	};
+
+	haptic {
+		compatible = "regulator-haptic";
+		haptic-supply = <&mt6358_vibr_reg>;
+		min-microvolt = <1200000>;
+		max-microvolt = <3300000>;
+	};
 };
 
 &auxadc {
@@ -692,6 +706,13 @@
 
 		pins-cmd-sel {
 			pinmux = <PINMUX_GPIO153__FUNC_GPIO153>;
+			output-low;
+		};
+	};
+
+	ir_pins: ir-pins {
+		pins-enable {
+			pinmux = <PINMUX_GPIO12__FUNC_PWM0>;
 			output-low;
 		};
 	};
