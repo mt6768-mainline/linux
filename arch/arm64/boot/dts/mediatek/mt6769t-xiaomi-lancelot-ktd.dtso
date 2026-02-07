@@ -3,6 +3,9 @@
  * Common Device Tree Source for Xiaomi Redmi 9 with Kinetic KTD3137 backlight
  */
 
+/dts-v1/;
+/plugin/;
+
 &i2c0 {
 	status = "okay";
 	#address-cells = <1>;

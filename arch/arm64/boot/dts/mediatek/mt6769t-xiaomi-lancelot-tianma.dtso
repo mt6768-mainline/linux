@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Common Device Tree Source for Xiaomi Redmi 9 with Tianma NT36672A panel
+ * Device Tree Source for Xiaomi Redmi 9 with Tianma NT36672A panel
  */
+
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/gpio/gpio.h>
 
 &dsi0 {
 	status = "okay";
@@ -19,6 +25,10 @@
 			};
 		};
 	};
+};
+
+&dsi_out {
+	remote-endpoint = <&panel_in>;
 };
 
 &spi0 {

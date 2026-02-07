@@ -3,6 +3,9 @@
  * Common Device Tree Source for Xiaomi Redmi 9 with Huaxing FT8719 panel
  */
 
+/dts-v1/;
+/plugin/;
+
 &dsi0 {
 	status = "okay";
 	#address-cells = <1>;
@@ -20,4 +23,8 @@
 			};
 		};
 	};
+};
+
+&dsi_out {
+	remote-endpoint = <&panel_in>;
 };

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Common Device Tree Source for Xiaomi Redmi 9
+ * Device Tree Source for Xiaomi Redmi 9
  */
 
 /dts-v1/;
@@ -197,10 +197,6 @@
 	cd-gpios = <&pio 18 GPIO_ACTIVE_HIGH>;
 	vmmc-supply = <&mt6358_vmch_reg>;
 	vqmmc-supply = <&mt6358_vmc_reg>;
-};
-
-&dsi_out {
-	remote-endpoint = <&panel_in>;
 };
 
 &gpu {
