@@ -1,0 +1,129 @@
+/dts-v1/;
+
+/ {
+    description = "MediaTek MT6768 FIT";
+    #address-cells = <1>;
+
+    images {
+        kernel {
+            description = "Linux kernel";
+            data = /incbin/("arch/arm64/boot/Image.gz");
+            type = "kernel";
+            arch = "arm64";
+            os = "linux";
+            compression = "gzip";
+            load = <0x40000000>;
+            entry = <0x40000000>;
+            hash-1 {
+                algo = "crc32";
+            };
+        };
+        
+        merlin-fdt {
+            description = "Xiaomi Redmi Note 9 FDT";
+            data = /incbin/("arch/arm64/boot/dts/mediatek/mt6769z-xiaomi-merlin.dtb");
+            type = "flat_dt";
+            arch = "arm64";
+            compression = "none";
+            hash-1 {
+                algo = "crc32";
+            };
+        };
+
+        lancelot-fdt {
+            description = "Xiaomi Redmi 9 FDT";
+            data = /incbin/("arch/arm64/boot/dts/mediatek/mt6769t-xiaomi-lancelot.dtb");
+            type = "flat_dt";
+            arch = "arm64";
+            compression = "none";
+            hash-1 {
+                algo = "crc32";
+            };
+        };
+
+        penangf-fdt {
+            description = "Motorola Moto G13/G23 FDT";
+            data = /incbin/("arch/arm64/boot/dts/mediatek/mt6769z-motorola-penangf.dtb");
+            type = "flat_dt";
+            arch = "arm64";
+            compression = "none";
+            hash-1 {
+                algo = "crc32";
+            };
+        };
+
+        lancelot-huaxing-fdt {
+            description = "Overlay for Xiaomi Redmi 9 with Huaxing FT8719 panel";
+            data = /incbin/("arch/arm64/boot/dts/mediatek/mt6769t-xiaomi-lancelot-huaxing.dtbo");
+            type = "flat_dt";
+            arch = "arm64";
+            compression = "none";
+            hash-1 {
+                algo = "crc32";
+            };
+        };
+
+        lancelot-tianma-fdt {
+            description = "Overlay for Xiaomi Redmi 9 with Tianma NT36672a panel";
+            data = /incbin/("arch/arm64/boot/dts/mediatek/mt6769t-xiaomi-lancelot-tianma.dtbo");
+            type = "flat_dt";
+            arch = "arm64";
+            compression = "none";
+            hash-1 {
+                algo = "crc32";
+            };
+        };
+
+        lancelot-ktd-fdt {
+            description = "Overlay for Xiaomi Redmi 9 with Kinetic KTD3137 backlight";
+            data = /incbin/("arch/arm64/boot/dts/mediatek/mt6769t-xiaomi-lancelot-ktd.dtbo");
+            type = "flat_dt";
+            arch = "arm64";
+            compression = "none";
+            hash-1 {
+                algo = "crc32";
+            };
+        };
+    };
+
+    configurations {
+        merlin {
+            description = "Xiaomi Redmi Note 9 (merlin) with Tianma NT36672a panel + Kinetic KTD3137 backlight";
+            kernel = "kernel";
+            fdt = "merlin-fdt";
+
+            bootargs = "earlycon=mtk8250,0x11002000 console=tty0 console=ttyGS0 console=ttyS0,921600n1 log_buf_len=32M";
+        };
+
+        lancelot-huaxing {
+            description = "Xiaomi Redmi 9 (lancelot) with Huaxing FT8719 panel";
+            kernel = "kernel";
+            fdt = "lancelot-fdt", "lancelot-huaxing-fdt";
+        };
+
+        lancelot-tianma {
+            description = "Xiaomi Redmi 9 (lancelot) with Tianma NT36672a panel";
+            kernel = "kernel";
+            fdt = "lancelot-fdt", "lancelot-tianma-fdt";
+        };
+
+        lancelot-huaxing-ktd {
+            description = "Xiaomi Redmi 9 (lancelot) with Huaxing FT8719 panel + Kinetic KTD3137 backlight";
+            kernel = "kernel";
+            fdt = "lancelot-fdt", "lancelot-huaxing-fdt", "lancelot-ktd-fdt";
+        };
+
+        lancelot-tianma-ktd {
+            description = "Xiaomi Redmi 9 (lancelot) with Tianma NT36672a panel + Kinetic KTD3137 backlight";
+            kernel = "kernel";
+            fdt = "lancelot-fdt", "lancelot-tianma-fdt", "lancelot-ktd-fdt";
+        };
+
+        penangf {
+            description = "Motorola Moto G13/G23 (penangf) with Chipone ICNL9916 panel";
+            kernel = "kernel";
+            fdt = "penangf-fdt";
+        };
+    };
+};
+
