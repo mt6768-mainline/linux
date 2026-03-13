@@ -730,6 +730,7 @@ static int mtk_dsi_poweron(struct mtk_dsi *dsi)
 		goto err_disable_engine_clk;
 	}
 
+	mtk_dsi_set_cmd_mode(dsi);
 	mtk_dsi_enable(dsi);
 
 	if (dsi->driver_data->has_shadow_ctl)
