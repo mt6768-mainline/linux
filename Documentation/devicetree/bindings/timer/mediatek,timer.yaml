@@ -30,6 +30,7 @@ properties:
               - mediatek,mt6580-timer
               - mediatek,mt6582-timer
               - mediatek,mt6589-timer
+              - mediatek,mt6768-timer
               - mediatek,mt6795-timer
               - mediatek,mt7623-timer
               - mediatek,mt8127-timer
@@ -40,6 +41,7 @@ properties:
       # SYST Timers
       - items:
           - enum:
+              - mediatek,mt6768-systimer
               - mediatek,mt7629-timer
               - mediatek,mt8183-timer
               - mediatek,mt8186-timer
