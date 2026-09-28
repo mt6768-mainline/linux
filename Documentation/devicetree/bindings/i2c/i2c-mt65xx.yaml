@@ -22,6 +22,7 @@ properties:
       - const: mediatek,mt2712-i2c
       - const: mediatek,mt6577-i2c
       - const: mediatek,mt6589-i2c
+      - const: mediatek,mt6768-i2c
       - const: mediatek,mt7622-i2c
       - const: mediatek,mt7981-i2c
       - const: mediatek,mt7986-i2c
