@@ -23,6 +23,7 @@ properties:
           - mediatek,mt2712-wdt
           - mediatek,mt6589-wdt
           - mediatek,mt6735-wdt
+          - mediatek,mt6768-wdt
           - mediatek,mt6795-wdt
           - mediatek,mt7986-wdt
           - mediatek,mt7988-wdt
