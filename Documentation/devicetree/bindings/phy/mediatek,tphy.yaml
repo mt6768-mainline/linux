@@ -97,6 +97,7 @@ properties:
         deprecated: true
       - const: mediatek,mt2712-u3phy
         deprecated: true
+      - const: mediatek,mt6768-tphy
       - const: mediatek,mt8173-u3phy
 
   reg:
