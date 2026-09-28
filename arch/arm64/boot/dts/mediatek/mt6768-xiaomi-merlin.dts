@@ -1,0 +1,51 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (c) 2025-2026 Roman Vivchar <rva333@protonmail.com>
+ */
+
+/dts-v1/;
+#include "mt6768.dtsi"
+
+/ {
+	model = "Xiaomi Redmi Note 9";
+	compatible = "xiaomi,merlin", "mediatek,mt6768";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		stdout-path = "serial0:921600n8";
+
+		framebuffer@7d9b0000 {
+			compatible = "simple-framebuffer";
+			memory-region = <&framebuffer_reserved>;
+			format = "a8r8g8b8";
+			width = <1080>;
+			stride = <((1080 + 8) * 4)>;
+			height = <2340>;
+		};
+	};
+
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0 0x40000000 0 0>;
+	};
+
+	reserved-memory {
+		ranges;
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+		framebuffer_reserved: framebuffer@7d9b0000 {
+			reg = <0 0x7d9b0000 0 0x2250000>;
+			no-map;
+		};
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
