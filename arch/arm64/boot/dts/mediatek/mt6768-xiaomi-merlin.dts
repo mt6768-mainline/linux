@@ -102,3 +102,12 @@
 	pinctrl-names = "default";
 	status = "okay";
 };
+
+&usb {
+	dr_mode = "otg";
+	status = "okay";
+};
+
+&u2phy {
+	status = "okay";
+};
