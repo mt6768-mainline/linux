@@ -4,6 +4,7 @@
  */
 
 /dts-v1/;
+#include <dt-bindings/gpio/gpio.h>
 #include "mt6768.dtsi"
 #include "mt6358.dtsi"
 
@@ -65,6 +66,38 @@
 	vqmmc-supply = <&mt6358_vio18_reg>;
 	pinctrl-0 = <&mmc0_default_pins>;
 	pinctrl-1 = <&mmc0_uhs_pins>;
+	pinctrl-names = "default", "state_uhs";
+
+	status = "okay";
+};
+
+&mmc1 {
+	assigned-clocks = <&apmixedsys CLK_APMIXED_MSDCPLL>,
+			  <&topckgen CLK_TOP_MSDC30_1_SEL>;
+	assigned-clock-rates = <400000000>;
+	assigned-clock-parents = <0>, <&topckgen CLK_TOP_MSDCPLL_D2>;
+
+	bus-width = <4>;
+	max-frequency = <200000000>;
+	cap-sd-highspeed;
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	sd-uhs-sdr50;
+	sd-uhs-sdr104;
+	sd-uhs-ddr50;
+	no-mmc;
+	no-sdio;
+	cd-gpios = <&pio 18 GPIO_ACTIVE_HIGH>;
+	vmmc-supply = <&mt6358_vmch_reg>;
+	vqmmc-supply = <&mt6358_vmc_reg>;
+
+	/*
+	 * SIM and microSD tray shares the same output detect pin. All 3 GPIOs
+	 * for microSD, SIM1 and SIM2 detection must be pulled up high to avoid
+	 * breaking each other.
+	 */
+	pinctrl-0 = <&mmc1_pins>, <&sim_pins>;
+	pinctrl-1 = <&mmc1_pins>, <&sim_pins>;
 	pinctrl-names = "default", "state_uhs";
 
 	status = "okay";
@@ -159,6 +192,31 @@
 		};
 	};
 
+	mmc1_pins: mmc1-pins {
+		pins-cd {
+			pinmux = <PINMUX_GPIO18__FUNC_GPIO18>;
+			bias-pull-up;
+			input-enable;
+		};
+
+		pins-clk {
+			pinmux = <PINMUX_GPIO171__FUNC_MSDC1_CLK>;
+			drive-strength = <4>;
+			bias-pull-down = <MTK_PUPD_SET_R1R0_10>;
+		};
+
+		pins-cmd-dat {
+			pinmux = <PINMUX_GPIO164__FUNC_MSDC1_DAT0>,
+				 <PINMUX_GPIO163__FUNC_MSDC1_DAT1>,
+				 <PINMUX_GPIO162__FUNC_MSDC1_DAT2>,
+				 <PINMUX_GPIO161__FUNC_MSDC1_DAT3>,
+				 <PINMUX_GPIO170__FUNC_MSDC1_CMD>;
+			input-enable;
+			drive-strength = <4>;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+		};
+	};
+
 	pwrap_pins: pwrap-pins {
 		pins-bus {
 			pinmux = <PINMUX_GPIO145__FUNC_PWRAP_SPI0_CSN>,
@@ -171,6 +229,15 @@
 			pinmux = <PINMUX_GPIO144__FUNC_PWRAP_SPI0_MI>;
 			input-enable;
 			bias-pull-down;
+		};
+	};
+
+	sim_pins: sim-pins {
+		pins-cd {
+			pinmux = <PINMUX_GPIO46__FUNC_MD_INT2_C2K_UIM1_HOT_PLUG>,
+				 <PINMUX_GPIO47__FUNC_MD_INT1_C2K_UIM0_HOT_PLUG>;
+			input-enable;
+			bias-pull-up;
 		};
 	};
 
