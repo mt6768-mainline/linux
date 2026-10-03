@@ -5,6 +5,7 @@
 
 /dts-v1/;
 #include "mt6768.dtsi"
+#include "mt6358.dtsi"
 
 / {
 	model = "Xiaomi Redmi Note 9";
@@ -46,7 +47,34 @@
 	};
 };
 
+&mt6358_vdram2_reg {
+	regulator-always-on;
+};
+
+&mt6358regulator {
+	vs1-ldo1-supply = <&mt6358_vs1_reg>;
+	vs2-ldo1-supply = <&mt6358_vdram1_reg>;
+	vs2-ldo2-supply = <&mt6358_vs2_reg>;
+	vs2-ldo3-supply = <&mt6358_vs2_reg>;
+	vs2-ldo4-supply = <&mt6358_vs2_reg>;
+};
+
 &pio {
+	pwrap_pins: pwrap-pins {
+		pins-bus {
+			pinmux = <PINMUX_GPIO145__FUNC_PWRAP_SPI0_CSN>,
+				 <PINMUX_GPIO146__FUNC_PWRAP_SPI0_MO>,
+				 <PINMUX_GPIO147__FUNC_PWRAP_SPI0_CK>;
+			bias-disable;
+		};
+
+		pins-mi {
+			pinmux = <PINMUX_GPIO144__FUNC_PWRAP_SPI0_MI>;
+			input-enable;
+			bias-pull-down;
+		};
+	};
+
 	uart0_pins: uart0-pins {
 		pins-rx {
 			pinmux = <PINMUX_GPIO95__FUNC_URXD0>;
@@ -58,6 +86,15 @@
 			pinmux = <PINMUX_GPIO96__FUNC_UTXD0>;
 		};
 	};
+};
+
+&pmic {
+	interrupts-extended = <&pio 144 IRQ_TYPE_LEVEL_HIGH>;
+};
+
+&pwrap {
+	pinctrl-0 = <&pwrap_pins>;
+	pinctrl-names = "default";
 };
 
 &uart0 {
