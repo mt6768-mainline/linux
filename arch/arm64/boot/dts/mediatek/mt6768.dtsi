@@ -362,7 +362,7 @@
 			compatible = "mediatek,mt6768-uart", "mediatek,mt6577-uart";
 			reg = <0 0x11002000 0 0x1000>;
 			interrupts = <GIC_SPI 112 IRQ_TYPE_LEVEL_LOW>;
-			clocks = <&clk26m>, <&clk26m>;
+			clocks = <&clk26m>, <&infracfg_ao CLK_INFRA_UART0>;
 			clock-names = "baud", "bus";
 
 			status = "disabled";
@@ -372,7 +372,7 @@
 			compatible = "mediatek,mt6768-uart", "mediatek,mt6577-uart";
 			reg = <0 0x11003000 0 0x1000>;
 			interrupts = <GIC_SPI 113 IRQ_TYPE_LEVEL_LOW>;
-			clocks = <&clk26m>, <&clk26m>;
+			clocks = <&clk26m>, <&infracfg_ao CLK_INFRA_UART1>;
 			clock-names = "baud", "bus";
 
 			status = "disabled";
