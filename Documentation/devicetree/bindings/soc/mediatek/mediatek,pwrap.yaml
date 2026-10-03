@@ -32,6 +32,7 @@ properties:
           - enum:
               - mediatek,mt2701-pwrap
               - mediatek,mt6765-pwrap
+              - mediatek,mt6768-pwrap
               - mediatek,mt6779-pwrap
               - mediatek,mt6795-pwrap
               - mediatek,mt6797-pwrap
