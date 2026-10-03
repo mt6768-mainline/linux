@@ -5,6 +5,7 @@
 
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/phy/phy.h>
 #include <dt-bindings/clock/mediatek,mt6768-clock.h>
 #include <dt-bindings/pinctrl/mediatek,mt6768-pinfunc.h>
 #include <dt-bindings/reset/mediatek,mt6768-resets.h>
@@ -649,6 +650,21 @@
 			status = "disabled";
 		};
 
+		usb: usb@11200000 {
+			compatible = "mediatek,mt6768-musb", "mediatek,mtk-musb";
+			reg = <0 0x11200000 0 0x1000>;
+			interrupts = <GIC_SPI 97 IRQ_TYPE_LEVEL_LOW>;
+			interrupt-names = "mc";
+			phys = <&u2port0 PHY_TYPE_USB2>;
+			clocks = <&infracfg_ao CLK_INFRA_ICUSB>,
+				 <&topckgen CLK_TOP_USB_TOP_SEL>,
+				 <&topckgen CLK_TOP_UNIVPLL3_D4>;
+			clock-names = "main", "mcu", "univpll";
+			usb-role-switch;
+
+			status = "disabled";
+		};
+
 		audiosys: clock-controller@11220000 {
 			compatible = "mediatek,mt6768-audiosys", "syscon";
 			reg = <0 0x11220000 0 0x1000>;
@@ -689,6 +705,23 @@
 			compatible = "mediatek,mt6768-mipi2b", "syscon";
 			reg = <0 0x11c15000 0 0x1000>;
 			#clock-cells = <1>;
+		};
+
+		u2phy: t-phy@11cc0000 {
+			compatible = "mediatek,mt6768-tphy", "mediatek,generic-tphy-v1";
+			reg = <0 0x11cc0000 0 0x800>;
+			ranges;
+			#address-cells = <2>;
+			#size-cells = <2>;
+
+			status = "disabled";
+
+			u2port0: usb-phy@11cc0800 {
+				reg = <0 0x11cc0800 0 0x100>;
+				clocks = <&infracfg_ao CLK_INFRA_ICUSB>;
+				clock-names = "ref";
+				#phy-cells = <1>;
+			};
 		};
 
 		mfgcfg: syscon@13000000 {
