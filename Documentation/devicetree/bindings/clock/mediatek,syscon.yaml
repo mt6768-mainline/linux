@@ -75,6 +75,10 @@ properties:
           - const: mediatek,mt7623-vdecsys
           - const: mediatek,mt2701-vdecsys
           - const: syscon
+      - items:
+          - const: mediatek,mt6768-mfgcfg
+          - const: mediatek,mt8183-mfgcfg
+          - const: syscon
 
   power-domains:
     maxItems: 1
@@ -93,7 +97,9 @@ if:
   properties:
     compatible:
       contains:
-        const: mediatek,mt8183-mfgcfg
+        enum:
+          - mediatek,mt6768-mfgcfg
+          - mediatek,mt8183-mfgcfg
 then:
   properties:
     power-domains: true
