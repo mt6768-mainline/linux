@@ -5,6 +5,7 @@
 
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/clock/mediatek,mt6768-clock.h>
 #include <dt-bindings/reset/mediatek,mt6768-resets.h>
 
 / {
@@ -293,12 +294,36 @@
 			};
 		};
 
+		mcucfg: syscon@c530000 {
+			compatible = "mediatek,mt6768-mcucfg", "syscon";
+			reg = <0 0xc530000 0 0x10000>;
+			#clock-cells = <1>;
+		};
+
 		sysirq: interrupt-controller@c53a650 {
 			compatible = "mediatek,mt6768-sysirq", "mediatek,mt6577-sysirq";
 			reg = <0 0xc53a650 0 0x50>;
 			interrupt-controller;
 			#interrupt-cells = <3>;
 			interrupt-parent = <&gic>;
+		};
+
+		topckgen: clock-controller@10000000 {
+			compatible = "mediatek,mt6768-topckgen", "syscon";
+			reg = <0 0x10000000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
+		infracfg_ao: syscon@10001000 {
+			compatible = "mediatek,mt6768-infracfg-ao", "syscon";
+			reg = <0 0x10001000 0 0x1000>;
+			#clock-cells = <1>;
+			#reset-cells = <1>;
+		};
+
+		pericfg: syscon@10003000 {
+			compatible = "mediatek,mt6768-pericfg", "syscon";
+			reg = <0 0x10003000 0 0x1000>;
 		};
 
 		watchdog: watchdog@10007000 {
@@ -315,6 +340,12 @@
 			clocks = <&clk13m>, <&clk32k>;
 
 			status = "disabled";
+		};
+
+		apmixedsys: syscon@1000c000 {
+			compatible = "mediatek,mt6768-apmixedsys", "syscon";
+			reg = <0 0x1000c000 0 0x1000>;
+			#clock-cells = <1>;
 		};
 
 		timer@10017000 {
@@ -345,6 +376,87 @@
 			clock-names = "baud", "bus";
 
 			status = "disabled";
+		};
+
+		audiosys: clock-controller@11220000 {
+			compatible = "mediatek,mt6768-audiosys", "syscon";
+			reg = <0 0x11220000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
+		mipi_rx_csi0a: syscon@11c10000 {
+			compatible = "mediatek,mt6768-mipi0a", "syscon";
+			reg = <0 0x11c10000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
+		mipi_rx_csi0b: syscon@11c11000 {
+			compatible = "mediatek,mt6768-mipi0b", "syscon";
+			reg = <0 0x11c11000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
+		mipi_rx_csi1a: syscon@11c12000 {
+			compatible = "mediatek,mt6768-mipi1a", "syscon";
+			reg = <0 0x11c12000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
+		mipi_rx_csi1b: syscon@11c13000 {
+			compatible = "mediatek,mt6768-mipi1b", "syscon";
+			reg = <0 0x11c13000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
+		mipi_rx_csi2a: syscon@11c14000 {
+			compatible = "mediatek,mt6768-mipi2a", "syscon";
+			reg = <0 0x11c14000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
+		mipi_rx_csi2b: syscon@11c15000 {
+			compatible = "mediatek,mt6768-mipi2b", "syscon";
+			reg = <0 0x11c15000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
+		mfgcfg: syscon@13000000 {
+			compatible = "mediatek,mt6768-mfgcfg", "mediatek,mt8183-mfgcfg",
+				     "syscon";
+			reg = <0 0x13000000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
+		mmsys: syscon@14000000 {
+			compatible = "mediatek,mt6768-mmsys", "syscon";
+			reg = <0 0x14000000 0 0x1000>;
+			#clock-cells = <1>;
+			#reset-cells = <1>;
+		};
+
+		imgsys: syscon@15020000 {
+			compatible = "mediatek,mt6768-imgsys", "syscon";
+			reg = <0 0x15020000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
+		vdecsys: syscon@16000000 {
+			compatible = "mediatek,mt6768-vdecsys", "syscon";
+			reg = <0 0x16000000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
+		vencsys: syscon@17000000 {
+			compatible = "mediatek,mt6768-vencsys",
+				     "mediatek,mt8183-vencsys", "syscon";
+			reg = <0 0x17000000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
+		camsys: syscon@1a000000 {
+			compatible = "mediatek,mt6768-camsys", "syscon";
+			reg = <0 0x1a000000 0 0x1000>;
+			#clock-cells = <1>;
 		};
 	};
 
