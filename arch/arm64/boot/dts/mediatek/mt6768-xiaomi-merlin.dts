@@ -4,6 +4,7 @@
  */
 
 /dts-v1/;
+#include <dt-bindings/gpio/gpio.h>
 #include "mt6768.dtsi"
 #include "mt6358.dtsi"
 
@@ -65,6 +66,33 @@
 	vqmmc-supply = <&mt6358_vio18_reg>;
 	pinctrl-0 = <&mmc0_default_pins>;
 	pinctrl-1 = <&mmc0_uhs_pins>;
+	pinctrl-names = "default", "state_uhs";
+
+	status = "okay";
+};
+
+&mmc1 {
+	assigned-clocks = <&apmixedsys CLK_APMIXED_MSDCPLL>,
+			  <&topckgen CLK_TOP_MSDC30_1_SEL>;
+	assigned-clock-rates = <400000000>;
+	assigned-clock-parents = <0>, <&topckgen CLK_TOP_MSDCPLL_D2>;
+
+	bus-width = <4>;
+	max-frequency = <200000000>;
+	cap-sd-highspeed;
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	sd-uhs-sdr50;
+	sd-uhs-sdr104;
+	sd-uhs-ddr50;
+	no-mmc;
+	no-sdio;
+	cd-gpios = <&pio 18 GPIO_ACTIVE_HIGH>;
+	vmmc-supply = <&mt6358_vmch_reg>;
+	vqmmc-supply = <&mt6358_vmc_reg>;
+
+	pinctrl-0 = <&mmc1_pins>;
+	pinctrl-1 = <&mmc1_pins>;
 	pinctrl-names = "default", "state_uhs";
 
 	status = "okay";
@@ -154,6 +182,31 @@
 
 		pins-rst {
 			pinmux = <PINMUX_GPIO133__FUNC_MSDC0_RSTB>;
+			drive-strength = <4>;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+		};
+	};
+
+	mmc1_pins: mmc1-pins {
+		pins-cd {
+			pinmux = <PINMUX_GPIO18__FUNC_GPIO18>;
+			bias-pull-up;
+			input-enable;
+		};
+
+		pins-clk {
+			pinmux = <PINMUX_GPIO171__FUNC_MSDC1_CLK>;
+			drive-strength = <4>;
+			bias-pull-down = <MTK_PUPD_SET_R1R0_10>;
+		};
+
+		pins-cmd-dat {
+			pinmux = <PINMUX_GPIO164__FUNC_MSDC1_DAT0>,
+				 <PINMUX_GPIO163__FUNC_MSDC1_DAT1>,
+				 <PINMUX_GPIO162__FUNC_MSDC1_DAT2>,
+				 <PINMUX_GPIO161__FUNC_MSDC1_DAT3>,
+				 <PINMUX_GPIO170__FUNC_MSDC1_CMD>;
+			input-enable;
 			drive-strength = <4>;
 			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
 		};
