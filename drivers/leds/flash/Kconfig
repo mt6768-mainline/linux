@@ -39,6 +39,18 @@ config LEDS_LM3601X
 	  This option enables support for the TI LM3601x family
 	  of flash, torch and indicator classes.
 
+config LEDS_LM3643
+	tristate "LED support for LM3643 dual LED flash driver"
+	depends on I2C
+	depends on V4L2_FLASH_LED_CLASS || !V4L2_FLASH_LED_CLASS
+	select REGMAP_I2C
+	help
+	  This option enables support for the Texas Instruments LM3643 dual
+	  LED flash driver.
+
+	  This driver can also be built as a module. If so, the module
+	  will be called "leds-lm3643".
+
 config LEDS_MAX77693
 	tristate "LED support for MAX77693 Flash"
 	depends on V4L2_FLASH_LED_CLASS || !V4L2_FLASH_LED_CLASS
