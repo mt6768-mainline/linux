@@ -9,6 +9,7 @@
 #include <linux/bitfield.h>
 #include <linux/bits.h>
 #include <linux/cleanup.h>
+#include <linux/dmi.h>
 #include <linux/gpio/consumer.h>
 #include <linux/i2c.h>
 #include <linux/led-class-flash.h>
@@ -691,6 +692,92 @@ static int lm3643_register_led(struct device *dev, struct lm3643 *chip,
 	return lm3643_register_v4l2(dev, led, fwnode);
 }
 
+/*
+ * Lenovo ThinkPads enumerate the chip through ACPI (HID TXNW3643) without a
+ * _DSD, so the LED is not described by firmware. On the boards below it drives
+ * the Windows Hello IR flood illuminator, with both current sources feeding a
+ * single LED. Describe that with a software node, with torch and flash limits
+ * (100 mA and 300 mA per output) well below the chip's maximums.
+ */
+static const u32 lm3643_ir_flood_sources[] = { 0, 1 };
+
+static const struct property_entry lm3643_ir_flood_props[] = {
+	PROPERTY_ENTRY_U32("reg", 0),
+	PROPERTY_ENTRY_U32_ARRAY("led-sources", lm3643_ir_flood_sources),
+	PROPERTY_ENTRY_STRING("function", LED_FUNCTION_FLASH),
+	PROPERTY_ENTRY_U32("color", LED_COLOR_ID_IR),
+	PROPERTY_ENTRY_U32("led-max-microamp", 200000),
+	PROPERTY_ENTRY_U32("flash-max-microamp", 600000),
+	PROPERTY_ENTRY_U32("flash-max-timeout-us", 100000),
+	{ }
+};
+
+static const struct software_node lm3643_ir_flood_root = {
+	.name = "lm3643",
+};
+
+static const struct software_node lm3643_ir_flood_led = {
+	.name = "led-0",
+	.parent = &lm3643_ir_flood_root,
+	.properties = lm3643_ir_flood_props,
+};
+
+static const struct software_node *lm3643_ir_flood_nodes[] = {
+	&lm3643_ir_flood_root,
+	&lm3643_ir_flood_led,
+	NULL
+};
+
+static const struct dmi_system_id lm3643_dmi_leds[] = {
+	{
+		/* Lenovo ThinkPad X1 Carbon Gen 14 */
+		.matches = {
+			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "LENOVO"),
+			DMI_EXACT_MATCH(DMI_PRODUCT_VERSION, "ThinkPad X1 Carbon Gen 14"),
+		},
+		.driver_data = (void *)lm3643_ir_flood_nodes,
+	},
+	{ }
+};
+
+static void lm3643_remove_dmi_leds(void *data)
+{
+	struct device *dev = data;
+	const struct dmi_system_id *id = dmi_first_match(lm3643_dmi_leds);
+
+	set_secondary_fwnode(dev, NULL);
+	if (id)
+		software_node_unregister_node_group(id->driver_data);
+}
+
+static int lm3643_add_dmi_leds(struct device *dev)
+{
+	const struct dmi_system_id *id;
+	const struct software_node **nodes;
+	int ret;
+
+	if (!has_acpi_companion(dev))
+		return 0;
+
+	id = dmi_first_match(lm3643_dmi_leds);
+	if (!id)
+		return 0;
+
+	nodes = id->driver_data;
+	/* The nodes are static: a second chip on the same board cannot reuse them */
+	if (software_node_fwnode(nodes[0]))
+		return dev_err_probe(dev, -EBUSY, "LED description already in use\n");
+
+	ret = software_node_register_node_group(nodes);
+	if (ret)
+		return dev_err_probe(dev, ret, "failed to register the LED description\n");
+
+	set_secondary_fwnode(dev, software_node_fwnode(nodes[0]));
+	dev_dbg(dev, "no LED nodes in firmware, using the DMI description\n");
+
+	return devm_add_action_or_reset(dev, lm3643_remove_dmi_leds, dev);
+}
+
 static int lm3643_probe(struct i2c_client *client)
 {
 	struct device *dev = &client->dev;
@@ -701,6 +788,12 @@ static int lm3643_probe(struct i2c_client *client)
 	int ret;
 
 	count = device_get_child_node_count(dev);
+	if (!count) {
+		ret = lm3643_add_dmi_leds(dev);
+		if (ret)
+			return ret;
+		count = device_get_child_node_count(dev);
+	}
 	if (!count || count > LM3643_NUM_CHANNELS)
 		return dev_err_probe(dev, -EINVAL, "%u LED nodes found, expected 1 to %d\n",
 					 count, LM3643_NUM_CHANNELS);
