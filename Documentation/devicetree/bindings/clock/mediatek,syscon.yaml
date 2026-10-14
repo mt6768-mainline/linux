@@ -36,6 +36,7 @@ properties:
               - mediatek,mt6765-imgsys
               - mediatek,mt6765-mipi0a
               - mediatek,mt6765-vcodecsys
+              - mediatek,mt6768-pericfg
               - mediatek,mt6779-camsys
               - mediatek,mt6779-imgsys
               - mediatek,mt6779-ipesys
@@ -95,21 +96,30 @@ properties:
 
 required:
   - compatible
-  - '#clock-cells'
 
-if:
-  properties:
-    compatible:
-      contains:
-        enum:
-          - mediatek,mt6768-mfgcfg
-          - mediatek,mt8183-mfgcfg
-then:
-  properties:
-    power-domains: true
-else:
-  properties:
-    power-domains: false
+allOf:
+  - if:
+      properties:
+        compatible:
+          contains:
+            enum:
+              - mediatek,mt6768-mfgcfg
+              - mediatek,mt8183-mfgcfg
+    then:
+      properties:
+        power-domains: true
+    else:
+      properties:
+        power-domains: false
+
+  - if:
+      properties:
+        compatible:
+          contains:
+            const: mediatek,mt6768-pericfg
+    else:
+      required:
+        - '#clock-cells'
 
 additionalProperties: false
 
