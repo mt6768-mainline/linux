@@ -663,6 +663,20 @@
 			status = "disabled";
 		};
 
+		thermal: thermal-sensor@1100b000 {
+			compatible = "mediatek,mt6768-thermal";
+			reg = <0 0x1100b000 0 0xc00>;
+			interrupts = <GIC_SPI 99 IRQ_TYPE_LEVEL_LOW>;
+			clocks = <&infracfg_ao CLK_INFRA_THERM>, <&infracfg_ao CLK_INFRA_AUXADC>;
+			clock-names = "therm", "auxadc";
+			resets = <&infracfg_ao MT6768_INFRA_RST0_THERM_CTRL_SWRST>;
+			nvmem-cells = <&thermal_calibration>;
+			nvmem-cell-names = "calibration-data";
+			#thermal-sensor-cells = <1>;
+			mediatek,auxadc = <&auxadc>;
+			mediatek,apmixedsys = <&apmixedsys>;
+		};
+
 		i2c6: i2c@1100d000 {
 			compatible = "mediatek,mt6768-i2c";
 			reg = <0 0x1100d000 0 0x1000>,
@@ -899,6 +913,10 @@
 			reg = <0 0x11ce0000 0 0x1000>;
 			#address-cells = <1>;
 			#size-cells = <1>;
+
+			thermal_calibration: thermal-calibration@180 {
+				reg = <0x180 0x3c>;
+			};
 
 			auxadc_calibration: auxadc-calibration@198 {
 				reg = <0x198 0x4>;
