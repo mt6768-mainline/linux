@@ -24,6 +24,7 @@ properties:
               - mediatek,mt2701-mmsys
               - mediatek,mt2712-mmsys
               - mediatek,mt6765-mmsys
+              - mediatek,mt6768-mmsys
               - mediatek,mt6779-mmsys
               - mediatek,mt6795-mmsys
               - mediatek,mt6797-mmsys
