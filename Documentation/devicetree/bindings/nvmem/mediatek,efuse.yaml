@@ -26,6 +26,7 @@ properties:
     oneOf:
       - items:
           - enum:
+              - mediatek,mt6768-efuse
               - mediatek,mt8188-efuse
               - mediatek,mt8189-efuse
               - mediatek,mt8196-efuse
