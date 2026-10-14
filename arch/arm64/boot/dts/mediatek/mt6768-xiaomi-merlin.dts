@@ -48,6 +48,14 @@
 	};
 };
 
+&mfg_async {
+	domain-supply = <&mt6358_vsram_gpu_reg>;
+};
+
+&mfg {
+	domain-supply = <&mt6358_vgpu_reg>;
+};
+
 &mmc0 {
 	bus-width = <8>;
 	max-frequency = <200000000>;
