@@ -75,6 +75,15 @@
 #define TEMP_ADCPNP3_1          0x1b4
 #define TEMP_MSR3_1             0x1B8
 
+#define TEMP_ADCPNP0_2          0x248
+#define TEMP_ADCPNP1_2          0x24c
+#define TEMP_ADCPNP2_2          0x250
+#define TEMP_MSR0_2             0x290
+#define TEMP_MSR1_2             0x294
+#define TEMP_MSR2_2             0x298
+#define TEMP_ADCPNP3_2          0x2b4
+#define TEMP_MSR3_2             0x2B8
+
 #define PTPCORESEL		0x400
 
 #define TEMP_MONCTL1_PERIOD_UNIT(x)	((x) & 0x3ff)
@@ -357,6 +366,7 @@ struct mtk_thermal_data {
 	const int cali_val;
 	const int num_controller;
 	const int *controller_offset;
+	const int *controller_sensors;
 	bool need_switch_bank;
 	struct thermal_bank_cfg bank_data[MAX_NUM_ZONES];
 	enum mtk_thermal_version version;
@@ -433,7 +443,7 @@ static const int mt8173_vts_index[MT8173_NUM_SENSORS] = {
 };
 
 /* MT6768 thermal sensor data */
-static const int mt6768_bank_data[MT6768_NUM_SENSORS][MT6768_NUM_SENSORS_PER_ZONE] = {
+static const int mt6768_bank_data[MT6768_NUM_ZONES][MT6768_NUM_SENSORS_PER_ZONE] = {
 	{ MT6768_TS4, MT6768_TS5, MT6768_TS6 },
 	{ MT6768_TS7, MT6768_TS8 },
 	{ MT6768_TS5, MT6768_TS6, MT6768_TS7, MT6768_TS8 },
@@ -441,16 +451,21 @@ static const int mt6768_bank_data[MT6768_NUM_SENSORS][MT6768_NUM_SENSORS_PER_ZON
 	{ MT6768_TS3 }
 };
 
-static const int mt6768_msr[MT6768_NUM_SENSORS_PER_ZONE] = {
-	TEMP_MSR0, TEMP_MSR1, TEMP_MSR2, TEMP_MSR3
+static const int mt6768_msr[MT6768_NUM_SENSORS] = {
+	TEMP_MSR0, TEMP_MSR1, TEMP_MSR2,
+	TEMP_MSR0_1, TEMP_MSR1_1, TEMP_MSR2_1,
+	TEMP_MSR0_2, TEMP_MSR1_2
 };
 
-static const int mt6768_adcpnp[MT6768_NUM_SENSORS_PER_ZONE] = {
-	TEMP_ADCPNP0, TEMP_ADCPNP1, TEMP_ADCPNP2, TEMP_ADCPNP3,
+static const int mt6768_adcpnp[MT6768_NUM_SENSORS] = {
+	TEMP_ADCPNP0, TEMP_ADCPNP1, TEMP_ADCPNP2,
+	TEMP_ADCPNP0_1, TEMP_ADCPNP1_1, TEMP_ADCPNP2_1,
+	TEMP_ADCPNP0_2, TEMP_ADCPNP1_2
 };
 
 static const int mt6768_mux_values[MT6768_NUM_SENSORS] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-static const int mt6768_tc_offset[MT6768_NUM_CONTROLLER] = {0x0, 0x100, 0x200};
+static const int mt6768_tc_offset[MT6768_NUM_CONTROLLER] = { 0x0, 0x100, 0x200 };
+static const int mt6768_controller_sensors[MT6768_NUM_CONTROLLER] = { 3, 3, 2 };
 
 static const int mt6768_vts_index[MT6768_NUM_SENSORS] = {
 	VTS1, VTS2, VTS3, VTS4, VTS5, VTS6, VTS7, VTS8
@@ -612,6 +627,7 @@ static const struct mtk_thermal_data mt6768_thermal_data = {
 	.vts_index = mt6768_vts_index,
 	.num_controller = MT6768_NUM_CONTROLLER,
 	.controller_offset = mt6768_tc_offset,
+	.controller_sensors = mt6768_controller_sensors,
 	.need_switch_bank = false,
 	.bank_data = {
 		{
@@ -955,10 +971,15 @@ static int mtk_thermal_bank_temperature(struct mtk_thermal_bank *bank)
 	u32 raw;
 
 	for (i = 0; i < conf->bank_data[bank->id].num_sensors; i++) {
-		raw = readl(mt->thermal_base + conf->msr[i]);
+		int raw_sensor = conf->bank_data[bank->id].sensors[i];
+
+		if (conf->need_switch_bank)
+			raw = readl(mt->thermal_base + conf->msr[i]);
+		else
+			raw = readl(mt->thermal_base + conf->msr[raw_sensor]);
 
 		temp = mt->raw_to_mcelsius(
-			mt, conf->bank_data[bank->id].sensors[i], raw);
+			mt, raw_sensor, raw);
 
 		/*
 		 * Depending on the filt/sen intervals and ADC polling time,
@@ -1006,6 +1027,7 @@ static void mtk_thermal_init_bank(struct mtk_thermal *mt, int num,
 
 	int offset = mt->conf->controller_offset[ctrl_id];
 	void __iomem *controller_base = mt->thermal_base + offset;
+	u32 monctl0, tmp;
 
 	bank->id = num;
 	bank->mt = mt;
@@ -1056,7 +1078,7 @@ static void mtk_thermal_init_bank(struct mtk_thermal *mt, int num,
 	writel(auxadc_phys_base + AUXADC_CON1_CLR_V,
 	       controller_base + TEMP_ADCMUXADDR);
 
-	if (mt->conf->version == MTK_THERMAL_V1 || 
+	if (mt->conf->version == MTK_THERMAL_V1 ||
 	    mt->conf->version == MTK_THERMAL_V1_5) {
 		/* AHB address for pnp sensor mux selection */
 		writel(apmixed_phys_base + APMIXED_SYS_TS_CON1,
@@ -1092,16 +1114,28 @@ static void mtk_thermal_init_bank(struct mtk_thermal *mt, int num,
 	writel(TEMP_ADCWRITECTRL_ADC_MUX_WRITE,
 		controller_base + TEMP_ADCWRITECTRL);
 
-	for (i = 0; i < conf->bank_data[num].num_sensors; i++)
-		writel(conf->sensor_mux_values[conf->bank_data[num].sensors[i]],
-		       mt->thermal_base + conf->adcpnp[i]);
+	if (conf->need_switch_bank) {
+		for (i = 0; i < conf->bank_data[num].num_sensors; i++)
+			writel(conf->sensor_mux_values[conf->bank_data[num].sensors[i]],
+			       mt->thermal_base + conf->adcpnp[i]);
 
-	writel((1 << conf->bank_data[num].num_sensors) - 1,
-	       controller_base + TEMP_MONCTL0);
+		monctl0 = (1 << conf->bank_data[num].num_sensors) - 1;
+	} else if (conf->controller_sensors) {
+		monctl0 = (1 << conf->controller_sensors[ctrl_id]) - 1;
+	} else {
+		monctl0 = (1 << conf->bank_data[0].num_sensors) - 1;
+	}
+
+	writel(monctl0, controller_base + TEMP_MONCTL0);
 
 	writel(TEMP_ADCWRITECTRL_ADC_PNP_WRITE |
 	       TEMP_ADCWRITECTRL_ADC_MUX_WRITE,
 	       controller_base + TEMP_ADCWRITECTRL);
+
+	if (!conf->need_switch_bank) {
+		tmp = readl(controller_base + TEMP_MSRCTL1);
+		writel((tmp & (~0x10e)), controller_base + TEMP_MSRCTL1);
+	}
 
 	mtk_thermal_put_bank(bank);
 }
@@ -1470,10 +1504,29 @@ static int mtk_thermal_probe(struct platform_device *pdev)
 	else
 		mt->raw_to_mcelsius = raw_to_mcelsius_v3;
 
-	for (ctrl_id = 0; ctrl_id < mt->conf->num_controller ; ctrl_id++)
-		for (i = 0; i < mt->conf->num_banks; i++)
-			mtk_thermal_init_bank(mt, i, apmixed_phys_base,
+	if (mt->conf->need_switch_bank) {
+		for (ctrl_id = 0; ctrl_id < mt->conf->num_controller; ctrl_id++)
+			for (i = 0; i < mt->conf->num_banks; i++)
+				mtk_thermal_init_bank(mt, i, apmixed_phys_base,
+						      auxadc_phys_base, ctrl_id);
+	} else {
+		for (i = 0; i < mt->conf->num_banks; i++) {
+			mt->banks[i].id = i;
+			mt->banks[i].mt = mt;
+		}
+
+		for (i = 0; i < mt->conf->num_sensors; i++)
+			writel(mt->conf->sensor_mux_values[i],
+			       mt->thermal_base + mt->conf->adcpnp[i]);
+
+		for (ctrl_id = 0; ctrl_id < mt->conf->num_controller; ctrl_id++)
+			mtk_thermal_init_bank(mt, 0, apmixed_phys_base,
 					      auxadc_phys_base, ctrl_id);
+
+		if (auxadc_base)
+			writel(BIT(mt->conf->auxadc_channel),
+			       auxadc_base + AUXADC_CON1_SET_V);
+	}
 
 	for (i = 0; i < mt->conf->num_banks; i++) {
 		struct mtk_thermal_bank *bank = &mt->banks[i];
