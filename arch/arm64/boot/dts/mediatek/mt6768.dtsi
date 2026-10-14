@@ -8,6 +8,7 @@
 #include <dt-bindings/phy/phy.h>
 #include <dt-bindings/clock/mediatek,mt6768-clock.h>
 #include <dt-bindings/pinctrl/mediatek,mt6768-pinfunc.h>
+#include <dt-bindings/power/mediatek,mt6768-power-controller.h>
 #include <dt-bindings/reset/mediatek,mt6768-resets.h>
 
 / {
@@ -369,6 +370,136 @@
 			interrupt-controller;
 			interrupts = <GIC_SPI 186 IRQ_TYPE_LEVEL_HIGH>;
 			#interrupt-cells = <2>;
+		};
+
+		scpsys: clock-controller@10006000 {
+			compatible = "mediatek,mt6768-scpsys", "syscon", "simple-mfd";
+			reg = <0 0x10006000 0 0x1000>;
+
+			spm: power-controller {
+				compatible = "mediatek,mt6768-power-controller";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				#power-domain-cells = <1>;
+
+				power-domain@MT6768_POWER_DOMAIN_MD1 {
+					reg = <MT6768_POWER_DOMAIN_MD1>;
+					#power-domain-cells = <0>;
+
+					mediatek,infracfg = <&infracfg_ao>;
+				};
+
+				power-domain@MT6768_POWER_DOMAIN_CONN {
+					reg = <MT6768_POWER_DOMAIN_CONN>;
+					#power-domain-cells = <0>;
+
+					mediatek,infracfg = <&infracfg_ao>;
+				};
+
+				power-domain@MT6768_POWER_DOMAIN_MM {
+					reg = <MT6768_POWER_DOMAIN_MM>;
+					#address-cells = <1>;
+					#size-cells = <0>;
+					#power-domain-cells = <1>;
+
+					clocks = <&topckgen CLK_TOP_MM_SEL>,
+						 <&mmsys CLK_MM_SMI_COMMON>,
+						 <&mmsys CLK_MM_SMI_COMM0>,
+						 <&mmsys CLK_MM_SMI_COMM1>,
+						 <&mmsys CLK_MM_SMI_LARB0>,
+						 <&mmsys CLK_MM_CAM_MDP>;
+					clock-names = "mm", "mm-0", "mm-1",
+						      "mm-2", "mm-3", "mm-4";
+					mediatek,infracfg = <&infracfg_ao>;
+
+					power-domain@MT6768_POWER_DOMAIN_ISP {
+						reg = <MT6768_POWER_DOMAIN_ISP>;
+						#power-domain-cells = <0>;
+
+						clocks = <&imgsys CLK_IMG_LARB2>,
+							 <&mmsys CLK_MM_SMI_IMG>,
+							 <&imgsys CLK_IMG_DIP>,
+							 <&imgsys CLK_IMG_FDVT>,
+							 <&imgsys CLK_IMG_DPE>;
+						clock-names = "isp-0", "isp-1", "isp-2",
+							      "isp-3", "isp-4";
+
+						mediatek,infracfg = <&infracfg_ao>;
+						mediatek,smi = <&smi_common>;
+					};
+
+					power-domain@MT6768_POWER_DOMAIN_CAM {
+						reg = <MT6768_POWER_DOMAIN_CAM>;
+						#power-domain-cells = <0>;
+
+						clocks = <&camsys CLK_CAM_LARB3>,
+							 <&camsys CLK_CAM_DFP_VAD>,
+							 <&camsys CLK_CAM_CAM>,
+							 <&camsys CLK_CAM_CCU>,
+							 <&mmsys CLK_MM_SMI_CAM>;
+						clock-names = "cam-0", "cam-1", "cam-2",
+							      "cam-3", "cam-4";
+
+						mediatek,infracfg = <&infracfg_ao>;
+						mediatek,smi = <&smi_common>;
+					};
+
+					power-domain@MT6768_POWER_DOMAIN_VENC {
+						reg = <MT6768_POWER_DOMAIN_VENC>;
+						#power-domain-cells = <0>;
+
+						clocks = <&vencsys CLK_VENC_VENC>;
+						clock-names = "venc-0";
+
+						mediatek,infracfg = <&infracfg_ao>;
+						mediatek,smi = <&smi_common>;
+					};
+
+					power-domain@MT6768_POWER_DOMAIN_VDEC {
+						reg = <MT6768_POWER_DOMAIN_VDEC>;
+						#power-domain-cells = <0>;
+
+						clocks = <&vdecsys CLK_VDEC_VDEC>,
+							 <&vdecsys CLK_VDEC_ACTIVE>,
+							 <&vdecsys CLK_VDEC_EN_ENG>,
+							 <&vdecsys CLK_VDEC_LARB1>;
+						clock-names = "vdec-0", "vdec-1",
+							      "vdec-2", "vdec-3";
+
+						mediatek,infracfg = <&infracfg_ao>;
+						mediatek,smi = <&smi_common>;
+					};
+				};
+
+				mfg_async: power-domain@MT6768_POWER_DOMAIN_MFG_ASYNC {
+					reg = <MT6768_POWER_DOMAIN_MFG_ASYNC>;
+					#address-cells = <1>;
+					#size-cells = <0>;
+					#power-domain-cells = <1>;
+
+					clocks = <&topckgen CLK_TOP_MFG_SEL>;
+					clock-names = "mfg";
+
+					mfg: power-domain@MT6768_POWER_DOMAIN_MFG {
+						reg = <MT6768_POWER_DOMAIN_MFG>;
+						#address-cells = <1>;
+						#size-cells = <0>;
+						#power-domain-cells = <1>;
+
+						mediatek,infracfg = <&infracfg_ao>;
+
+						power-domain@MT6768_POWER_DOMAIN_MFG_CORE0 {
+							reg = <MT6768_POWER_DOMAIN_MFG_CORE0>;
+							#power-domain-cells = <0>;
+						};
+
+						power-domain@MT6768_POWER_DOMAIN_MFG_CORE1 {
+							reg = <MT6768_POWER_DOMAIN_MFG_CORE1>;
+							#power-domain-cells = <0>;
+						};
+					};
+				};
+			};
 		};
 
 		watchdog: watchdog@10007000 {
@@ -765,6 +896,17 @@
 			reg = <0 0x14000000 0 0x1000>;
 			#clock-cells = <1>;
 			#reset-cells = <1>;
+		};
+
+		smi_common: smi@14002000 {
+			compatible = "mediatek,mt6768-smi-common";
+			reg = <0 0x14002000 0 0x1000>;
+			clocks = <&mmsys CLK_MM_SMI_COMMON>,
+				 <&mmsys CLK_MM_SMI_COMMON>,
+				 <&mmsys CLK_MM_SMI_COMM0>,
+				 <&mmsys CLK_MM_SMI_COMM1>;
+			clock-names = "apb", "smi", "gals0", "gals1";
+			power-domains = <&spm MT6768_POWER_DOMAIN_MM>;
 		};
 
 		imgsys: syscon@15020000 {
