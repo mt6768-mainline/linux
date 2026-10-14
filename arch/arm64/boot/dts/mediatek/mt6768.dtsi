@@ -884,6 +884,13 @@
 			};
 		};
 
+		efuse: efuse@11ce0000 {
+			compatible = "mediatek,mt6768-efuse", "mediatek,mt8186-efuse";
+			reg = <0 0x11ce0000 0 0x1000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+		};
+
 		mfgcfg: syscon@13000000 {
 			compatible = "mediatek,mt6768-mfgcfg", "mediatek,mt8183-mfgcfg",
 				     "syscon";
