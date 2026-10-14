@@ -24,6 +24,7 @@ properties:
   compatible:
     enum:
       - mediatek,mt6735-power-controller
+      - mediatek,mt6768-power-controller
       - mediatek,mt6795-power-controller
       - mediatek,mt6858-power-controller
       - mediatek,mt6893-power-controller
@@ -180,6 +181,7 @@ allOf:
         compatible:
           contains:
             enum:
+              - mediatek,mt6768-power-controller
               - mediatek,mt8183-power-controller
               - mediatek,mt8196-power-controller
     then:
