@@ -24,6 +24,7 @@ properties:
       - enum:
           - mediatek,mt2701-thermal
           - mediatek,mt2712-thermal
+          - mediatek,mt6768-thermal
           - mediatek,mt7622-thermal
           - mediatek,mt7986-thermal
           - mediatek,mt8173-thermal
