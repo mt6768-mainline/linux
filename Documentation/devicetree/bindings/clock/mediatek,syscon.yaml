@@ -79,6 +79,10 @@ properties:
           - const: mediatek,mt6768-mfgcfg
           - const: mediatek,mt8183-mfgcfg
           - const: syscon
+      - items:
+          - const: mediatek,mt6768-vencsys
+          - const: mediatek,mt8183-vencsys
+          - const: syscon
 
   power-domains:
     maxItems: 1
