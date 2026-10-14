@@ -6,6 +6,7 @@
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/phy/phy.h>
+#include <dt-bindings/thermal/thermal.h>
 #include <dt-bindings/clock/mediatek,mt6768-clock.h>
 #include <dt-bindings/pinctrl/mediatek,mt6768-pinfunc.h>
 #include <dt-bindings/power/mediatek,mt6768-power-controller.h>
@@ -971,6 +972,166 @@
 			compatible = "mediatek,mt6768-camsys", "syscon";
 			reg = <0 0x1a000000 0 0x1000>;
 			#clock-cells = <1>;
+		};
+	};
+
+	thermal_zones: thermal-zones {
+		a55_cluster_thermal: a55-cluster-thermal {
+			polling-delay-passive = <100>;
+			polling-delay = <500>;
+			thermal-sensors = <&thermal 0>;
+			sustainable-power = <5000>;
+
+			cooling-maps {
+				map0 {
+					trip = <&a55_target>;
+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+					contribution = <3072>;
+				};
+			};
+
+			trips {
+				a55_threshold: a55-trip-point0 {
+					temperature = <60000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				a55_target: a55-trip-point1 {
+					temperature = <80000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				a55_crit: a55-crit {
+					temperature = <105000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
+		};
+
+		a75_cluster_thermal: a75-cluster-thermal {
+			polling-delay-passive = <100>;
+			polling-delay = <500>;
+			thermal-sensors = <&thermal 1>;
+			sustainable-power = <5000>;
+
+			cooling-maps {
+				map0 {
+					trip = <&a75_target>;
+					cooling-device = <&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+					contribution = <4096>;
+				};
+			};
+
+			trips {
+				a75_threshold: a75-trip-point0 {
+					temperature = <60000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				a75_target: a75-trip-point1 {
+					temperature = <80000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				a75_crit: a75-crit {
+					temperature = <105000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
+		};
+
+		cci_thermal: cci-thermal {
+			polling-delay-passive = <100>;
+			polling-delay = <500>;
+			thermal-sensors = <&thermal 2>;
+			sustainable-power = <5000>;
+
+			trips {
+				cci_threshold: cci-trip-point0 {
+					temperature = <60000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				cci_target: cci-trip-point1 {
+					temperature = <80000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				cci_crit: cci-crit {
+					temperature = <105000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
+		};
+
+
+		gpu_thermal: gpu-thermal {
+			polling-delay-passive = <100>;
+			polling-delay = <500>;
+			thermal-sensors = <&thermal 3>;
+			sustainable-power = <5000>;
+
+			trips {
+				gpu_threshold: gpu-trip-point0 {
+					temperature = <60000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				gpu_target: gpu-trip-point1 {
+					temperature = <80000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				gpu_crit: gpu-crit {
+					temperature = <105000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
+		};
+
+		soc_thermal: soc-thermal {
+			polling-delay-passive = <100>;
+			polling-delay = <500>;
+			thermal-sensors = <&thermal 4>;
+			sustainable-power = <5000>;
+
+			trips {
+				soc_threshold: soc-trip-point0 {
+					temperature = <60000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				soc_target: soc-trip-point1 {
+					temperature = <80000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				soc_crit: soc-crit {
+					temperature = <105000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
 		};
 	};
 
