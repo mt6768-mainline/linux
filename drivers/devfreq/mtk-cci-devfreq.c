@@ -7,6 +7,7 @@
 #include <linux/devfreq.h>
 #include <linux/minmax.h>
 #include <linux/module.h>
+#include <linux/nvmem-consumer.h>
 #include <linux/of.h>
 #include <linux/platform_device.h>
 #include <linux/pm_opp.h>
@@ -246,6 +247,21 @@ static struct devfreq_dev_profile mtk_ccifreq_profile = {
 	.target = mtk_ccifreq_target,
 };
 
+static int mtk_ccifreq_set_speedbin(struct device *dev)
+{
+	u32 val;
+	int ret;
+
+	ret = nvmem_cell_read_variable_le_u32(dev, NULL, &val);
+	if (ret) {
+		if (ret == -ENOENT || ret == -EOPNOTSUPP)
+			return 0;
+		return dev_err_probe(dev, ret, "failed to read speedbin\n");
+	}
+
+	return devm_pm_opp_set_supported_hw(dev, &val, 1);
+}
+
 static int mtk_ccifreq_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
@@ -318,6 +334,10 @@ static int mtk_ccifreq_probe(struct platform_device *pdev)
 	ret = clk_prepare_enable(drv->cci_clk);
 	if (ret)
 		goto out_free_resources;
+
+	ret = mtk_ccifreq_set_speedbin(dev);
+	if (ret)
+		goto out_disable_cci_clk;
 
 	ret = dev_pm_opp_of_add_table(dev);
 	if (ret) {
