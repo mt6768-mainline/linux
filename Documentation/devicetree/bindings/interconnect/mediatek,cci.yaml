@@ -57,6 +57,9 @@ properties:
       SoC specific needs. When absent, the voltage scaling flow is handled by
       hardware, hence no software "voltage tracking" is needed.
 
+  nvmem-cells:
+    maxItems: 1
+
 required:
   - compatible
   - clocks
