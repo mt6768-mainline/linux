@@ -21,6 +21,7 @@ description: |+
 properties:
   compatible:
     enum:
+      - mediatek,mt6768-svs
       - mediatek,mt8183-svs
       - mediatek,mt8186-svs
       - mediatek,mt8188-svs
