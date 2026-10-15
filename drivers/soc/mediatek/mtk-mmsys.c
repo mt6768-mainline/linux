@@ -14,6 +14,7 @@
 #include <linux/soc/mediatek/mtk-mmsys.h>
 
 #include "mtk-mmsys.h"
+#include "mt6768-mmsys.h"
 #include "mt8167-mmsys.h"
 #include "mt8173-mmsys.h"
 #include "mt8183-mmsys.h"
@@ -39,6 +40,11 @@ static const struct mtk_mmsys_driver_data mt2712_mmsys_driver_data = {
 
 static const struct mtk_mmsys_driver_data mt6768_mmsys_driver_data = {
 	.clk_driver = "clk-mt6768-mm",
+	.routes = mmsys_mt6768_routing_table,
+	.num_routes = ARRAY_SIZE(mmsys_mt6768_routing_table),
+	.rst_tb = mmsys_mt6768_rst_tb,
+	.num_resets = ARRAY_SIZE(mmsys_mt6768_rst_tb),
+	.sw0_rst_offset = MT8183_MMSYS_SW0_RST_B,
 };
 
 static const struct mtk_mmsys_driver_data mt6779_mmsys_driver_data = {
