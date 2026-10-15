@@ -1370,6 +1370,16 @@
 			mediatek,apmixedsys = <&apmixedsys>;
 		};
 
+		svs: svs@1100bc00 {
+			compatible = "mediatek,mt6768-svs";
+			reg = <0 0x1100bc00 0 0x400>;
+			interrupts = <GIC_SPI 142 IRQ_TYPE_LEVEL_LOW>;
+			clocks = <&infracfg_ao CLK_INFRA_THERM>;
+			clock-names = "main";
+			nvmem-cells = <&svs_calibration>, <&thermal_calibration>;
+			nvmem-cell-names = "svs-calibration-data", "t-calibration-data";
+		};
+
 		i2c6: i2c@1100d000 {
 			compatible = "mediatek,mt6768-i2c";
 			reg = <0 0x1100d000 0 0x1000>,
@@ -1617,6 +1627,10 @@
 
 			auxadc_calibration: auxadc-calibration@198 {
 				reg = <0x198 0x4>;
+			};
+
+			svs_calibration: svs-calibration@580 {
+				reg = <0x580 0x64>;
 			};
 		};
 
