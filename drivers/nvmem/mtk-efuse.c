@@ -4,12 +4,14 @@
  * Author: Andrew-CT Chen <andrew-ct.chen@mediatek.com>
  */
 
+#include <linux/bitrev.h>
 #include <linux/device.h>
 #include <linux/module.h>
 #include <linux/io.h>
 #include <linux/nvmem-provider.h>
 #include <linux/platform_device.h>
 #include <linux/property.h>
+#include <linux/unaligned.h>
 
 struct mtk_efuse_pdata {
 	bool uses_post_processing;
@@ -48,11 +50,25 @@ static int mtk_efuse_cpu_speedbin_pp(void *context, const char *id, int index,
 				     unsigned int offset, void *data, size_t bytes)
 {
 	u8 *val = data;
+	u8 seg;
 
-	if (val[0] >= 8)
+	if (val[0] & 0x0f)
+		seg = val[0] & 0x0f;
+	else
+		seg = bitrev8(val[0]);
+
+	if (seg >= 16)
 		return -EINVAL;
 
-	val[0] = BIT(val[0]);
+	if (bytes >= 4)
+		put_unaligned_le32(BIT(seg), data);
+	else if (bytes >= 2)
+		put_unaligned_le16(BIT(seg), data);
+	else if (seg < 8)
+		val[0] = BIT(seg);
+	else
+		return -EINVAL;
+
 	return 0;
 }
 
