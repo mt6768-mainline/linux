@@ -12,8 +12,9 @@ maintainers:
 description: |
   The nt36672a IC from Novatek is a generic DSI Panel IC used to drive dsi
   panels.
-  Right now, support is added only for a Tianma FHD+ LCD display panel with a
-  resolution of 1080x2246. It is a video mode DSI panel.
+  Supported panels:
+  - Tianma FHD+ LCD display panel with a resolution of 1080x2246 (Poco F1)
+  - Tianma TL065FVXM03-01 FHD+ LCD display panel with a resolution of 1080x2340 (Redmi Note 9)
 
 allOf:
   - $ref: panel-common.yaml#
@@ -23,6 +24,7 @@ properties:
     items:
       - enum:
           - tianma,fhd-video
+          - tianma,tl065fvxm03-01
       - const: novatek,nt36672a
     description: This indicates the panel manufacturer of the panel that is
       in turn using the NT36672A panel driver. This compatible string
