@@ -11,6 +11,7 @@
 
 #include <dt-bindings/reset/mt2712-resets.h>
 #include <dt-bindings/reset/mediatek,mt6735-wdt.h>
+#include <dt-bindings/reset/mediatek,mt6768-resets.h>
 #include <dt-bindings/reset/mediatek,mt6795-resets.h>
 #include <dt-bindings/reset/mediatek,mt8167-wdt.h>
 #include <dt-bindings/reset/mt7986-resets.h>
@@ -168,6 +169,25 @@ static const u8 mt8167_toprgu_sw_rst_tb[] = {
 static const struct mtk_wdt_data mt8167_data = {
 	.toprgu_sw_rst_tb = mt8167_toprgu_sw_rst_tb,
 	.toprgu_sw_rst_num = ARRAY_SIZE(mt8167_toprgu_sw_rst_tb),
+};
+
+static const u8 mt6768_toprgu_sw_rst_tb[] = {
+	[MT6768_TOPRGU_MM_SW_RST]		= 1,
+	[MT6768_TOPRGU_MFG_SW_RST]		= 2,
+	[MT6768_TOPRGU_VENC_SW_RST]		= 3,
+	[MT6768_TOPRGU_VDEC_SW_RST]		= 4,
+	[MT6768_TOPRGU_IMG_SW_RST]		= 5,
+	[MT6768_TOPRGU_MD_SW_RST]		= 7,
+	[MT6768_TOPRGU_CONN_SW_RST]		= 9,
+	[MT6768_TOPRGU_CONN_MCU_SW_RST]		= 12,
+	[MT6768_TOPRGU_C2K_SW_RST]		= 15,
+	[MT6768_TOPRGU_AUDIO_SW_RST]		= 17,
+	[MT6768_TOPRGU_CAMSYS_SW_RST]		= 18,
+};
+
+static const struct mtk_wdt_data mt6768_data = {
+	.toprgu_sw_rst_tb = mt6768_toprgu_sw_rst_tb,
+	.toprgu_sw_rst_num = ARRAY_SIZE(mt6768_toprgu_sw_rst_tb),
 };
 
 /**
@@ -606,6 +626,7 @@ static const struct of_device_id mtk_wdt_dt_ids[] = {
 	{ .compatible = "mediatek,mt2712-wdt", .data = &mt2712_data },
 	{ .compatible = "mediatek,mt6589-wdt", .data = &mt6589_data },
 	{ .compatible = "mediatek,mt6735-wdt", .data = &mt6735_data },
+	{ .compatible = "mediatek,mt6768-wdt", .data = &mt6768_data },
 	{ .compatible = "mediatek,mt6795-wdt", .data = &mt6795_data },
 	{ .compatible = "mediatek,mt7629-wdt", .data = &mt7629_data },
 	{ .compatible = "mediatek,mt7986-wdt", .data = &mt7986_data },
