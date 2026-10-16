@@ -404,6 +404,52 @@ static const struct nt36672a_panel_desc tianma_fhd_video_panel_desc = {
 	.send_deinit_cmds = tianma_fhd_video_send_deinit_cmds,
 };
 
+static void tianma_tl065fvxm03_01_fhd_video_send_init_cmds_1(struct mipi_dsi_multi_context *dsi_ctx)
+{
+	/* Page 0x25 */
+	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0xff, 0x25);
+	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0xfb, 0x01);
+	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x05, 0x04);
+	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x66, 0x48);
+
+	/* Page 0x10 */
+	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0xff, 0x10);
+	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0xfb, 0x01);
+	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x35, 0x00);
+	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x51, 0xff);
+	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x53, 0x24);
+	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x55, 0x00);
+}
+
+static const struct drm_display_mode tianma_tl065fvxm03_01_fhd_video_panel_default_mode = {
+	.clock		= 171336,
+
+	.hdisplay	= 1080,
+	.hsync_start	= 1080 + 60,
+	.hsync_end	= 1080 + 60 + 10,
+	.htotal		= 1080 + 60 + 10 + 60,
+
+	.vdisplay	= 2340,
+	.vsync_start	= 2340 + 10,
+	.vsync_end	= 2340 + 10 + 2,
+	.vtotal		= 2340 + 10 + 2 + 8,
+
+	.type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED,
+};
+
+static const struct nt36672a_panel_desc tianma_tl065fvxm03_01_fhd_video_panel_desc = {
+	.display_mode = &tianma_tl065fvxm03_01_fhd_video_panel_default_mode,
+
+	.width_mm = 69,
+	.height_mm = 151,
+
+	.mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE |
+		      MIPI_DSI_CLOCK_NON_CONTINUOUS | MIPI_DSI_MODE_LPM,
+	.format = MIPI_DSI_FMT_RGB888,
+	.lanes = 4,
+	.send_init_cmds_1 = tianma_tl065fvxm03_01_fhd_video_send_init_cmds_1,
+};
+
 static int nt36672a_panel_add(struct nt36672a_panel *pinfo)
 {
 	struct device *dev = &pinfo->link->dev;
@@ -481,6 +527,7 @@ static void nt36672a_panel_remove(struct mipi_dsi_device *dsi)
 
 static const struct of_device_id tianma_fhd_video_of_match[] = {
 	{ .compatible = "tianma,fhd-video", .data = &tianma_fhd_video_panel_desc },
+	{ .compatible = "tianma,tl065fvxm03-01", .data = &tianma_tl065fvxm03_01_fhd_video_panel_desc },
 	{ },
 };
 MODULE_DEVICE_TABLE(of, tianma_fhd_video_of_match);
