@@ -905,6 +905,15 @@ config CHARGER_SMB347
 	  Say Y to include support for Summit Microelectronics SMB345,
 	  SMB347 or SMB358 Battery Charger.
 
+config CHARGER_SMB1351
+	tristate "Qualcomm SMB1351 Battery Charger"
+	depends on I2C
+	depends on REGULATOR
+	select REGMAP_I2C
+	help
+	  Say Y to include support for Qualcomm SMB1351 Battery Charger.
+
+
 config CHARGER_TPS65090
 	tristate "TPS65090 battery charger driver"
 	depends on MFD_TPS65090
