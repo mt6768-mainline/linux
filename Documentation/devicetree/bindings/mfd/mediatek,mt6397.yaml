@@ -265,6 +265,13 @@ properties:
     description:
       Pin controller
 
+  fuel-gauge:
+    type: object
+    $ref: /schemas/power/supply/mediatek,mt6358-gauge.yaml#
+    unevaluatedProperties: false
+    description:
+      Fuel gauge block of MT6358 PMIC.
+
   vsys-smps-supply:
     description: Supply for regulator control logic
 
