@@ -977,6 +977,202 @@
 		};
 	};
 
+	gpu_opp_table: opp-table-gpu {
+		compatible = "operating-points-v2";
+
+		opp-299000000 {
+			opp-hz = /bits/ 64 <299000000>;
+			opp-microvolt = <612500>;
+			opp-supported-hw = <0x7fe>;
+		};
+
+		opp-315000000 {
+			opp-hz = /bits/ 64 <315000000>;
+			opp-microvolt = <618750>;
+			opp-supported-hw = <0x7fe>;
+		};
+
+		opp-332000000 {
+			opp-hz = /bits/ 64 <332000000>;
+			opp-microvolt = <625000>;
+			opp-supported-hw = <0x7fe>;
+		};
+
+		opp-349000000 {
+			opp-hz = /bits/ 64 <349000000>;
+			opp-microvolt = <631250>;
+			opp-supported-hw = <0x7fe>;
+		};
+
+		opp-366000000 {
+			opp-hz = /bits/ 64 <366000000>;
+			opp-microvolt = <637500>;
+			opp-supported-hw = <0x7fe>;
+		};
+
+		opp-383000000 {
+			opp-hz = /bits/ 64 <383000000>;
+			opp-microvolt = <643750>;
+			opp-supported-hw = <0x7fe>;
+		};
+
+		opp-400000000 {
+			opp-hz = /bits/ 64 <400000000>;
+			opp-microvolt = <643750>;
+			opp-supported-hw = <0x7fe>;
+		};
+
+		opp-417000000 {
+			opp-hz = /bits/ 64 <417000000>;
+			opp-microvolt = <650000>;
+			opp-supported-hw = <0x7fe>;
+		};
+
+		opp-434000000 {
+			opp-hz = /bits/ 64 <434000000>;
+			opp-microvolt = <656250>;
+			opp-supported-hw = <0x7fe>;
+		};
+
+		opp-450000000 {
+			opp-hz = /bits/ 64 <450000000>;
+			opp-microvolt = <662500>;
+			opp-supported-hw = <0x7fe>;
+		};
+
+		opp-467000000 {
+			opp-hz = /bits/ 64 <467000000>;
+			opp-microvolt = <668750>;
+			opp-supported-hw = <0x7fe>;
+		};
+
+		opp-484000000 {
+			opp-hz = /bits/ 64 <484000000>;
+			opp-microvolt = <668750>;
+			opp-supported-hw = <0x7fe>;
+		};
+
+		opp-509000000 {
+			opp-hz = /bits/ 64 <509000000>;
+			opp-microvolt = <681250>;
+			opp-supported-hw = <0x7fe>;
+		};
+
+		opp-535000000 {
+			opp-hz = /bits/ 64 <535000000>;
+			opp-microvolt = <687500>;
+			opp-supported-hw = <0x7fe>;
+		};
+
+		opp-560000000 {
+			opp-hz = /bits/ 64 <560000000>;
+			opp-microvolt = <693750>;
+			opp-supported-hw = <0x7fe>;
+		};
+
+		opp-586000000 {
+			opp-hz = /bits/ 64 <586000000>;
+			opp-microvolt = <700000>;
+			opp-supported-hw = <0x7fe>;
+		};
+
+		opp-611000000 {
+			opp-hz = /bits/ 64 <611000000>;
+			opp-microvolt = <706250>;
+			opp-supported-hw = <0x7fe>;
+		};
+
+		opp-637000000 {
+			opp-hz = /bits/ 64 <637000000>;
+			opp-microvolt = <712500>;
+			opp-supported-hw = <0x7e6>;
+		};
+
+		opp-663000000 {
+			opp-hz = /bits/ 64 <663000000>;
+			opp-microvolt = <725000>;
+			opp-supported-hw = <0x7e6>;
+		};
+
+		opp-690000000 {
+			opp-hz = /bits/ 64 <690000000>;
+			opp-microvolt = <737500>;
+			opp-supported-hw = <0x7e6>;
+		};
+
+		opp-716000000 {
+			opp-hz = /bits/ 64 <716000000>;
+			opp-microvolt = <750000>;
+			opp-supported-hw = <0x7e6>;
+		};
+
+		opp-743000000 {
+			opp-hz = /bits/ 64 <743000000>;
+			opp-microvolt = <756250>;
+			opp-supported-hw = <0x7e6>;
+		};
+
+		opp-769000000 {
+			opp-hz = /bits/ 64 <769000000>;
+			opp-microvolt = <768750>;
+			opp-supported-hw = <0x7e6>;
+		};
+
+		opp-796000000 {
+			opp-hz = /bits/ 64 <796000000>;
+			opp-microvolt = <781250>;
+			opp-supported-hw = <0x7e6>;
+		};
+
+		opp-823000000 {
+			opp-hz = /bits/ 64 <823000000>;
+			opp-microvolt = <793750>;
+			opp-supported-hw = <0x7e6>;
+		};
+
+		opp-850000000 {
+			opp-hz = /bits/ 64 <850000000>;
+			opp-microvolt = <800000>;
+			opp-supported-hw = <0x660>;
+		};
+
+		opp-875000000 {
+			opp-hz = /bits/ 64 <875000000>;
+			opp-microvolt = <825000>;
+			opp-supported-hw = <0x660>;
+		};
+
+		opp-900000000 {
+			opp-hz = /bits/ 64 <900000000>;
+			opp-microvolt = <850000>;
+			opp-supported-hw = <0x660>;
+		};
+
+		opp-925000000 {
+			opp-hz = /bits/ 64 <925000000>;
+			opp-microvolt = <875000>;
+			opp-supported-hw = <0x660>;
+		};
+
+		opp-950000000 {
+			opp-hz = /bits/ 64 <950000000>;
+			opp-microvolt = <900000>;
+			opp-supported-hw = <0x660>;
+		};
+
+		opp-975000000 {
+			opp-hz = /bits/ 64 <975000000>;
+			opp-microvolt = <925000>;
+			opp-supported-hw = <0x060>;
+		};
+
+		opp-1000000000 {
+			opp-hz = /bits/ 64 <1000000000>;
+			opp-microvolt = <950000>;
+			opp-supported-hw = <0x060>;
+		};
+	};
+
 	pmu-a55 {
 		compatible = "arm,cortex-a55-pmu";
 		interrupt-parent = <&gic>;
@@ -1694,6 +1890,33 @@
 				     "syscon";
 			reg = <0 0x13000000 0 0x1000>;
 			#clock-cells = <1>;
+			power-domains = <&spm MT6768_POWER_DOMAIN_MFG_ASYNC>;
+		};
+
+		gpu: gpu@13040000 {
+			compatible = "mediatek,mt6768-mali", "mediatek,mt8186-mali",
+				     "arm,mali-bifrost";
+			reg = <0 0x13040000 0 0x4000>;
+			interrupts =
+				<GIC_SPI 276 IRQ_TYPE_LEVEL_LOW>,
+				<GIC_SPI 275 IRQ_TYPE_LEVEL_LOW>,
+				<GIC_SPI 274 IRQ_TYPE_LEVEL_LOW>;
+			interrupt-names = "job", "mmu", "gpu";
+
+			clocks = <&mfgcfg CLK_MFG_BG3D>;
+
+			power-domains =
+				<&spm MT6768_POWER_DOMAIN_MFG_CORE0>,
+				<&spm MT6768_POWER_DOMAIN_MFG_CORE1>;
+			power-domain-names = "core0", "core1";
+
+			dynamic-power-coefficient = <1763>;
+			operating-points-v2 = <&gpu_opp_table>;
+			nvmem-cells = <&cpu_speedbin>;
+			nvmem-cell-names = "speed-bin";
+			#cooling-cells = <2>;
+
+			status = "disabled";
 		};
 
 		mmsys: syscon@14000000 {
@@ -2212,12 +2435,18 @@
 			};
 		};
 
-
 		gpu_thermal: gpu-thermal {
 			polling-delay-passive = <100>;
 			polling-delay = <500>;
 			thermal-sensors = <&thermal 3>;
 			sustainable-power = <5000>;
+
+			cooling-maps {
+				map0 {
+					trip = <&gpu_target>;
+					cooling-device = <&gpu THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
 
 			trips {
 				gpu_threshold: gpu-trip-point0 {
