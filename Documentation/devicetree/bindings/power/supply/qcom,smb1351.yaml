@@ -1,0 +1,87 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/power/supply/qcom,smb1351.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Qualcomm / Summit Microelectronics SMB1351 Battery Charger
+
+maintainers:
+  - Roman Vivchar <rva333@protonmail.com>
+
+description:
+  The SMB1351 is a single-cell switch-mode battery charger with power path
+  management and integrated USB-OTG boost regulator.
+
+properties:
+  compatible:
+    const: qcom,smb1351-charger
+
+  reg:
+    maxItems: 1
+
+  interrupts:
+    maxItems: 1
+
+  enable-gpios: true
+
+  monitored-battery:
+    $ref: /schemas/types.yaml#/definitions/phandle
+    description:
+      Phandle to the monitored battery.
+
+  input-current-limit-microamp:
+    default: 500000
+    description:
+      Maximum current drawn from the input supply in microamperes.
+
+  usb-vbus:
+    type: object
+    $ref: /schemas/regulator/regulator.yaml#
+    description:
+      USB OTG 5V boost regulator.
+    unevaluatedProperties: false
+
+required:
+  - compatible
+  - reg
+  - monitored-battery
+
+additionalProperties: false
+
+examples:
+  - |
+    #include <dt-bindings/gpio/gpio.h>
+    #include <dt-bindings/interrupt-controller/irq.h>
+
+    battery: battery {
+        compatible = "simple-battery";
+        constant-charge-current-max-microamp = <1800000>;
+        constant-charge-voltage-max-microvolt = <4400000>;
+        precharge-current-microamp = <500000>;
+        charge-term-current-microamp = <200000>;
+    };
+
+    i2c {
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        charger@55 {
+            compatible = "qcom,smb1351-charger";
+            reg = <0x55>;
+
+            interrupt-parent = <&pio>;
+            interrupts = <20 IRQ_TYPE_LEVEL_LOW>;
+
+            enable-gpios = <&pio 166 GPIO_ACTIVE_LOW>;
+            monitored-battery = <&battery>;
+            input-current-limit-microamp = <1500000>;
+
+            usb-vbus {
+                regulator-name = "smb1351-usb-otg-vbus";
+                regulator-min-microvolt = <5000000>;
+                regulator-max-microvolt = <5000000>;
+            };
+        };
+    };
+
