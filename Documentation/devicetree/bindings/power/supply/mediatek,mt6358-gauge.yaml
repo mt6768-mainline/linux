@@ -1,0 +1,67 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/power/supply/mediatek,mt6358-gauge.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: MediaTek MT6358 Fuel Gauge
+
+maintainers:
+  - Roman Vivchar <rva333@protonmail.com>
+
+description:
+  The MT6358 fuel gauge provides voltage, current, average current, and
+  accumulated charge (coulomb counter) measurements for the attached
+  battery.
+
+allOf:
+  - $ref: power-supply.yaml#
+
+properties:
+  compatible:
+    const: mediatek,mt6358-gauge
+
+  io-channels:
+    items:
+      - description: Battery voltage ADC channel
+
+  nvmem-cells:
+    items:
+      - description: RTC spare cell for initialization flag
+      - description: RTC spare cell for saved state-of-charge
+
+  nvmem-cell-names:
+    items:
+      - const: initialization
+      - const: state-of-charge
+
+  shunt-resistor-micro-ohms:
+    description: Shunt resistor value in micro-ohms
+    default: 10000
+
+  mediatek,car-tune-value:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description: Tuning factor for coulomb counter in per-mille
+    default: 1000
+
+  monitored-battery: true
+
+required:
+  - compatible
+  - io-channels
+
+additionalProperties: false
+
+examples:
+  - |
+    #include <dt-bindings/iio/adc/mediatek,mt6358-auxadc.h>
+
+    fuel-gauge {
+        compatible = "mediatek,mt6358-gauge";
+        io-channels = <&pmic_adc MT6358_AUXADC_BATADC>;
+        nvmem-cells = <&fg_init>, <&fg_soc>;
+        nvmem-cell-names = "initialization", "state-of-charge";
+        shunt-resistor-micro-ohms = <10000>;
+        mediatek,car-tune-value = <990>;
+        monitored-battery = <&battery>;
+    };
