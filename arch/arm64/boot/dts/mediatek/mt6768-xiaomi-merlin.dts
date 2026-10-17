@@ -17,18 +17,7 @@
 	};
 
 	chosen {
-		#address-cells = <2>;
-		#size-cells = <2>;
 		stdout-path = "serial0:921600n8";
-
-		framebuffer@7d9b0000 {
-			compatible = "simple-framebuffer";
-			memory-region = <&framebuffer_reserved>;
-			format = "a8r8g8b8";
-			width = <1080>;
-			stride = <((1080 + 8) * 4)>;
-			height = <2340>;
-		};
 	};
 
 	memory@40000000 {
@@ -36,15 +25,34 @@
 		reg = <0 0x40000000 0 0>;
 	};
 
+	reg_lcd_bias_enn: regulator-lcd-bias-enn {
+		compatible = "regulator-fixed";
+		regulator-name = "lcd_bias_enn";
+		regulator-min-microvolt = <5500000>;
+		regulator-max-microvolt = <5500000>;
+		gpio = <&pio 165 GPIO_ACTIVE_HIGH>;
+		pinctrl-0 = <&panel_enn_pins>;
+		pinctrl-names = "default";
+		enable-active-high;
+		startup-delay-us = <5000>;
+	};
+
+	reg_lcd_bias_enp: regulator-lcd-bias-enp {
+		compatible = "regulator-fixed";
+		regulator-name = "lcd_bias_enp";
+		regulator-min-microvolt = <5500000>;
+		regulator-max-microvolt = <5500000>;
+		gpio = <&pio 169 GPIO_ACTIVE_HIGH>;
+		pinctrl-0 = <&panel_enp_pins>;
+		pinctrl-names = "default";
+		enable-active-high;
+		startup-delay-us = <3000>;
+	};
+
 	reserved-memory {
 		ranges;
 		#address-cells = <2>;
 		#size-cells = <2>;
-
-		framebuffer_reserved: framebuffer@7d9b0000 {
-			reg = <0 0x7d9b0000 0 0x2250000>;
-			no-map;
-		};
 	};
 };
 
@@ -258,6 +266,27 @@
 			input-enable;
 			drive-strength = <4>;
 			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+		};
+	};
+
+	panel_enn_pins: panel-enn-pins {
+		pins-en {
+			pinmux = <PINMUX_GPIO165__FUNC_GPIO165>;
+			bias-disable;
+		};
+	};
+
+	panel_enp_pins: panel-enp-pins {
+		pins-en {
+			pinmux = <PINMUX_GPIO169__FUNC_GPIO169>;
+			bias-disable;
+		};
+	};
+
+	panel_pins: panel-pins {
+		pins-rst {
+			pinmux = <PINMUX_GPIO45__FUNC_GPIO45>;
+			bias-disable;
 		};
 	};
 

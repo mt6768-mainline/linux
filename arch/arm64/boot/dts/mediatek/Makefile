@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt2712-evb.dtb
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt6755-evb.dtb
-dtb-$(CONFIG_ARCH_MEDIATEK) += mt6768-xiaomi-merlin.dtb
+mt6768-xiaomi-merlin-nt36672a-ktd3137-dtbs := mt6768-xiaomi-merlin.dtb \
+	mt6768-xiaomi-merlin-nt36672a.dtbo
+dtb-$(CONFIG_ARCH_MEDIATEK) += mt6768-xiaomi-merlin-nt36672a-ktd3137.dtb
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt6779-evb.dtb
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt6795-evb.dtb
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt6795-sony-xperia-m5.dtb

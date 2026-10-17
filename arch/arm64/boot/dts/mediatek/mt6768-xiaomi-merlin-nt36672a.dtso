@@ -1,0 +1,37 @@
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pinctrl/mediatek,mt6768-pinfunc.h>
+
+&dsi0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	panel@0 {
+		compatible = "tianma,tl065fvxm03-01", "novatek,nt36672a";
+		reg = <0>;
+		pinctrl-0 = <&panel_pins>;
+		pinctrl-names = "default";
+
+		vddio-supply = <&mt6358_vio18_reg>;
+		vddpos-supply = <&reg_lcd_bias_enp>;
+		vddneg-supply = <&reg_lcd_bias_enn>;
+		reset-gpios = <&pio 45 GPIO_ACTIVE_LOW>;
+
+		port {
+			nt36672a_in: endpoint {
+				remote-endpoint = <&dsi_out>;
+			};
+		};
+	};
+};
+
+&dsi_out {
+	remote-endpoint = <&nt36672a_in>;
+};
+
+&mipi_tx0 {
+	status = "okay";
+};
