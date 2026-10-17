@@ -77,6 +77,15 @@ static const struct resource mt6358_keys_resources[] = {
 	DEFINE_RES_IRQ_NAMED(MT6358_IRQ_HOMEKEY_R, "homekey_r"),
 };
 
+static const struct resource mt6358_gauge_resources[] = {
+	DEFINE_RES_IRQ_NAMED(MT6358_IRQ_FG_BAT1_H, "COULOMB_H"),
+	DEFINE_RES_IRQ_NAMED(MT6358_IRQ_FG_BAT1_L, "COULOMB_L"),
+	DEFINE_RES_IRQ_NAMED(MT6358_IRQ_BAT2_H, "VBAT_H"),
+	DEFINE_RES_IRQ_NAMED(MT6358_IRQ_BAT2_L, "VBAT_L"),
+	DEFINE_RES_IRQ_NAMED(MT6358_IRQ_BATON_BAT_OUT, "BAT_OUT"),
+	DEFINE_RES_IRQ_NAMED(MT6358_IRQ_FG_ZCV, "ZCV"),
+};
+
 static const struct resource mt6359_keys_resources[] = {
 	DEFINE_RES_IRQ_NAMED(MT6359_IRQ_PWRKEY, "powerkey"),
 	DEFINE_RES_IRQ_NAMED(MT6359_IRQ_HOMEKEY, "homekey"),
@@ -229,6 +238,11 @@ static const struct mfd_cell mt6358_devs[] = {
 		.num_resources = ARRAY_SIZE(mt6358_keys_resources),
 		.resources = mt6358_keys_resources,
 		.of_compatible = "mediatek,mt6358-keys"
+	}, {
+		.name = "mt6358-gauge",
+		.num_resources = ARRAY_SIZE(mt6358_gauge_resources),
+		.resources = mt6358_gauge_resources,
+		.of_compatible = "mediatek,mt6358-gauge",
 	},
 };
 
