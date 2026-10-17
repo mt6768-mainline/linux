@@ -92,6 +92,11 @@
 	proc-supply = <&mt6358_vproc11_reg>;
 };
 
+&gpu {
+	mali-supply = <&mt6358_vgpu_reg>;
+	status = "okay";
+};
+
 &mfg_async {
 	domain-supply = <&mt6358_vsram_gpu_reg>;
 };
@@ -157,6 +162,22 @@
 
 &mt6358_vdram2_reg {
 	regulator-always-on;
+};
+
+&mt6358_vgpu_reg {
+	regulator-min-microvolt = <612500>;
+	regulator-max-microvolt = <950000>;
+
+	regulator-coupled-with = <&mt6358_vsram_gpu_reg>;
+	regulator-coupled-max-spread = <100000>;
+};
+
+&mt6358_vsram_gpu_reg {
+	regulator-min-microvolt = <850000>;
+	regulator-max-microvolt = <1050000>;
+
+	regulator-coupled-with = <&mt6358_vgpu_reg>;
+	regulator-coupled-max-spread = <100000>;
 };
 
 &mt6358regulator {
