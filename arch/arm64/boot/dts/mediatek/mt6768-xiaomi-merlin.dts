@@ -163,6 +163,29 @@
 	domain-supply = <&mt6358_vsram_gpu_reg>;
 };
 
+&i2c7 {
+	clock-frequency = <400000>;
+	pinctrl-0 = <&i2c7_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	charger@55 {
+		compatible = "qcom,smb1351-charger";
+		reg = <0x55>;
+		interrupt-parent = <&pio>;
+		interrupts = <20 IRQ_TYPE_LEVEL_LOW>;
+		monitored-battery = <&battery>;
+		enable-gpios = <&pio 166 GPIO_ACTIVE_LOW>;
+		input-current-limit-microamp = <1500000>;
+
+		usb-vbus {
+			regulator-name = "smb1351-usb-otg-vbus";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+		};
+	};
+};
+
 &mfg {
 	domain-supply = <&mt6358_vgpu_reg>;
 };
@@ -257,6 +280,15 @@
 };
 
 &pio {
+	i2c7_pins: i2c7-pins {
+		pins-bus {
+			pinmux = <PINMUX_GPIO175__FUNC_SCL7>,
+				 <PINMUX_GPIO176__FUNC_SDA7>;
+			bias-pull-up;
+			input-enable;
+		};
+	};
+
 	mmc0_default_pins: mmc0-default-pins {
 		pins-clk {
 			pinmux = <PINMUX_GPIO124__FUNC_MSDC0_CLK>;
