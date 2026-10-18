@@ -163,6 +163,20 @@
 	domain-supply = <&mt6358_vsram_gpu_reg>;
 };
 
+&i2c1 {
+	clock-frequency = <400000>;
+	pinctrl-0 = <&i2c1_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	magnetometer@c {
+		compatible = "asahi-kasei,ak09918", "asahi-kasei,ak09912";
+		reg = <0x0c>;
+		vdd-supply = <&mt6358_vio18_reg>;
+		vid-supply = <&mt6358_vio18_reg>;
+	};
+};
+
 &i2c7 {
 	clock-frequency = <400000>;
 	pinctrl-0 = <&i2c7_pins>;
@@ -280,6 +294,15 @@
 };
 
 &pio {
+	i2c1_pins: i2c1-pins {
+		pins-bus {
+			pinmux = <PINMUX_GPIO84__FUNC_SCL1>,
+				 <PINMUX_GPIO81__FUNC_SDA1>;
+			bias-pull-up;
+			input-enable;
+		};
+	};
+
 	i2c7_pins: i2c7-pins {
 		pins-bus {
 			pinmux = <PINMUX_GPIO175__FUNC_SCL7>,
