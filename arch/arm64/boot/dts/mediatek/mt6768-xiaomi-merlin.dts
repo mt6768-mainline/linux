@@ -160,6 +160,15 @@
 		vdd-supply = <&mt6358_vio18_reg>;
 		vid-supply = <&mt6358_vio18_reg>;
 	};
+
+	light-sensor@47 {
+		compatible = "sensortek,stk3310";
+		reg = <0x47>;
+		interrupt-parent = <&pio>;
+		interrupts = <10 IRQ_TYPE_LEVEL_LOW>;
+		pinctrl-0 = <&light_sensor_pins>;
+		pinctrl-names = "default";
+	};
 };
 
 &i2c7 {
@@ -271,6 +280,11 @@
 	regulator-coupled-max-spread = <100000>;
 };
 
+/* STK3310 */
+&mt6358_vio28_reg {
+	regulator-always-on;
+};
+
 &mt6358_vsram_gpu_reg {
 	regulator-min-microvolt = <850000>;
 	regulator-max-microvolt = <1050000>;
@@ -330,6 +344,14 @@
 		pins-row {
 			pinmux = <PINMUX_GPIO92__FUNC_KPROW0>;
 			bias-pull-down = <MTK_PUPD_SET_R1R0_10>;
+		};
+	};
+
+	light_sensor_pins: light-sensor-pins {
+		pins-int {
+			pinmux = <PINMUX_GPIO10__FUNC_GPIO10>;
+			input-enable;
+			bias-pull-up;
 		};
 	};
 
