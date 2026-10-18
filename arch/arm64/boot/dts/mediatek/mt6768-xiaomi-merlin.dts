@@ -302,6 +302,14 @@
 };
 
 &pio {
+	bmi160_pins: bmi160-pins {
+		pins-int {
+			pinmux = <PINMUX_GPIO2__FUNC_GPIO2>;
+			input-enable;
+			bias-pull-down;
+		};
+	};
+
 	charger_pins: charger-pins {
 		pins-en {
 			pinmux = <PINMUX_GPIO166__FUNC_GPIO166>;
@@ -496,6 +504,23 @@
 		};
 	};
 
+	spi1_pins: spi1-pins {
+		pins-bus {
+			pinmux = <PINMUX_GPIO86__FUNC_SPI1_A_CSB>,
+				 <PINMUX_GPIO87__FUNC_SPI1_A_MO>,
+				 <PINMUX_GPIO88__FUNC_SPI1_A_CLK>;
+			drive-strength = <4>;
+			bias-disable;
+		};
+
+		pins-mi {
+			pinmux = <PINMUX_GPIO85__FUNC_SPI1_A_MI>;
+			drive-strength = <4>;
+			input-enable;
+			bias-pull-down;
+		};
+	};
+
 	uart0_pins: uart0-pins {
 		pins-rx {
 			pinmux = <PINMUX_GPIO95__FUNC_URXD0>;
@@ -516,6 +541,29 @@
 &pwrap {
 	pinctrl-0 = <&pwrap_pins>;
 	pinctrl-names = "default";
+};
+
+&spi1 {
+	pinctrl-0 = <&spi1_pins>;
+	pinctrl-names = "default";
+	mediatek,pad-select = <0>;
+	status = "okay";
+
+	imu@0 {
+		compatible = "bosch,bmi160";
+		reg = <0>;
+		spi-max-frequency = <4000000>;
+		interrupt-parent = <&pio>;
+		interrupts = <2 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "INT1";
+		mount-matrix = "-1", "0", "0",
+			       "0", "1", "0",
+			       "0", "0", "-1";
+		pinctrl-0 = <&bmi160_pins>;
+		pinctrl-names = "default";
+		vdd-supply = <&mt6358_vio28_reg>;
+		vddio-supply = <&mt6358_vio18_reg>;
+	};
 };
 
 &uart0 {
