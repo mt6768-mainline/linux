@@ -175,6 +175,13 @@
 		vdd-supply = <&mt6358_vio18_reg>;
 		vid-supply = <&mt6358_vio18_reg>;
 	};
+
+	light-sensor@47 {
+		compatible = "sensortek,stk3310";
+		reg = <0x47>;
+		interrupt-parent = <&pio>;
+		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
+	};
 };
 
 &i2c7 {
@@ -275,6 +282,11 @@
 
 	regulator-coupled-with = <&mt6358_vsram_gpu_reg>;
 	regulator-coupled-max-spread = <100000>;
+};
+
+/* STK3310 */
+&mt6358_vio28_reg {
+	regulator-always-on;
 };
 
 &mt6358_vsram_gpu_reg {
