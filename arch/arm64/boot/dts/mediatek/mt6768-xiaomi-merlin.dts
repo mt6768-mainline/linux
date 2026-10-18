@@ -148,6 +148,16 @@
 			       "0", "1", "0",
 			       "0", "0", "-1";
 	};
+
+	light-sensor@47 {
+		compatible = "sensortek,stk3337", "sensortek,stk3310";
+		reg = <0x47>;
+		interrupt-parent = <&pio>;
+		interrupts = <10 IRQ_TYPE_LEVEL_LOW>;
+		pinctrl-0 = <&light_sensor_pins>;
+		pinctrl-names = "default";
+		vdd-supply = <&mt6358_vio28_reg>;
+	};
 };
 
 &i2c7 {
@@ -329,6 +339,14 @@
 			pinmux = <PINMUX_GPIO93__FUNC_KPCOL0>;
 			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
 			input-enable;
+		};
+	};
+
+	light_sensor_pins: light-sensor-pins {
+		pins-int {
+			pinmux = <PINMUX_GPIO10__FUNC_GPIO10>;
+			input-enable;
+			bias-pull-up;
 		};
 	};
 
