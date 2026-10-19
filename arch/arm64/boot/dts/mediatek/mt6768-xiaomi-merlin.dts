@@ -5,6 +5,7 @@
 
 /dts-v1/;
 #include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/leds/common.h>
 #include "mt6768.dtsi"
 #include "mt6358.dtsi"
 
@@ -52,6 +53,19 @@
 
 	chosen {
 		stdout-path = "serial0:921600n8";
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+		pinctrl-0 = <&flashlight_pins>;
+		pinctrl-names = "default";
+
+		led-0 {
+			color = <LED_COLOR_ID_WHITE>;
+			function = LED_FUNCTION_TORCH;
+			gpios = <&pio 152 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
 	};
 
 	memory@40000000 {
@@ -306,6 +320,20 @@
 };
 
 &pio {
+	flashlight_pins: flashlight-pins {
+		pins-strobe {
+			pinmux = <PINMUX_GPIO153__FUNC_GPIO153>;
+			output-low;
+			bias-pull-down;
+		};
+
+		pins-torch {
+			pinmux = <PINMUX_GPIO152__FUNC_GPIO152>;
+			output-low;
+			bias-pull-down;
+		};
+	};
+
 	i2c1_pins: i2c1-pins {
 		pins-bus {
 			pinmux = <PINMUX_GPIO84__FUNC_SCL1>,
