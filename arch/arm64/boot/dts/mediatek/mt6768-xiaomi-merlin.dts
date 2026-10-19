@@ -555,6 +555,17 @@
 		};
 	};
 
+	spi0_pins: spi0-pins {
+		pins-bus {
+			pinmux = <PINMUX_GPIO32__FUNC_SPI0_MI>,
+				 <PINMUX_GPIO33__FUNC_SPI0_CSB>,
+				 <PINMUX_GPIO34__FUNC_SPI0_MO>,
+				 <PINMUX_GPIO35__FUNC_SPI0_CLK>;
+			drive-strength = <4>;
+			bias-disable;
+		};
+	};
+
 	spi1_pins: spi1-pins {
 		pins-bus {
 			pinmux = <PINMUX_GPIO86__FUNC_SPI1_A_CSB>,
@@ -569,6 +580,19 @@
 			drive-strength = <4>;
 			input-enable;
 			bias-pull-down;
+		};
+	};
+
+	touch_pins: touch-pins {
+		pins-int {
+			pinmux = <PINMUX_GPIO1__FUNC_GPIO1>;
+			input-enable;
+			bias-disable;
+		};
+
+		pins-rst {
+			pinmux = <PINMUX_GPIO92__FUNC_GPIO92>;
+			bias-disable;
 		};
 	};
 
