@@ -68,6 +68,13 @@
 		};
 	};
 
+	haptic {
+		compatible = "regulator-haptic";
+		haptic-supply = <&mt6358_vibr_reg>;
+		min-microvolt = <2900000>;
+		max-microvolt = <2900000>;
+	};
+
 	irled {
 		compatible = "pwm-ir-tx";
 		pwms = <&pwm1 0 1000000>;
