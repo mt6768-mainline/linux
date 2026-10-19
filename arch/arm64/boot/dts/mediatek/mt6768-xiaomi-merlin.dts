@@ -68,6 +68,13 @@
 		};
 	};
 
+	irled {
+		compatible = "pwm-ir-tx";
+		pwms = <&pwm1 0 1000000>;
+		pinctrl-0 = <&ir_pins>;
+		pinctrl-names = "default";
+	};
+
 	memory@40000000 {
 		device_type = "memory";
 		reg = <0 0x40000000 0 0>;
@@ -352,6 +359,14 @@
 		};
 	};
 
+	ir_pins: ir-pins {
+		pins-pwm {
+			pinmux = <PINMUX_GPIO12__FUNC_PWM0>;
+			bias-pull-down;
+			drive-strength = <4>;
+		};
+	};
+
 	mmc0_default_pins: mmc0-default-pins {
 		pins-clk {
 			pinmux = <PINMUX_GPIO124__FUNC_MSDC0_CLK>;
@@ -520,6 +535,10 @@
 &pwrap {
 	pinctrl-0 = <&pwrap_pins>;
 	pinctrl-names = "default";
+};
+
+&pwm1 {
+	status = "okay";
 };
 
 &spi1 {
