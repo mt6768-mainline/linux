@@ -71,6 +71,26 @@ config SND_SOC_MT2701_WM8960
 	  Select Y if you have such device.
 	  If unsure select "N".
 
+config SND_SOC_MT6768
+	tristate "ASoC support for Mediatek MT6768 chip"
+	depends on ARCH_MEDIATEK || COMPILE_TEST
+	select SND_SOC_MEDIATEK
+	help
+	  This adds ASoC platform driver support for Mediatek MT6768 chip
+	  that can be used with other codecs.
+	  Select Y if you have such device.
+	  If unsure select "N".
+
+config SND_SOC_MT6768_MT6358
+	tristate "ASoC Audio driver for MT6768 with MT6358 codec"
+	depends on SND_SOC_MT6768
+	select SND_SOC_MT6358
+	help
+	  This adds ASoC driver for Mediatek MT6768 boards
+	  with the MT6358 audio codec.
+	  Select Y if you have such device.
+	  If unsure select "N".
+
 config SND_SOC_MT6797
 	tristate "ASoC support for Mediatek MT6797 chip"
 	depends on ARCH_MEDIATEK
