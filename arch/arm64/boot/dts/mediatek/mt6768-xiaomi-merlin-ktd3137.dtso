@@ -1,0 +1,30 @@
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/gpio.h>
+
+&i2c0 {
+	clock-frequency = <400000>;
+	pinctrl-0 = <&i2c0_pins>;
+	pinctrl-names = "default";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	
+	status = "okay";
+
+	backlight: backlight@36 {
+		compatible = "kinetic,ktd3137";
+		reg = <0x36>;
+		enable-gpios = <&pio 160 GPIO_ACTIVE_HIGH>;
+		led-max-microamp = <20200>;
+		default-brightness = <2047>;
+		pinctrl-0 = <&backlight_pins>;
+		pinctrl-names = "default";
+	};
+};
+
+&dsi0 {
+	panel@0 {
+		backlight = <&backlight>;
+	};
+};
