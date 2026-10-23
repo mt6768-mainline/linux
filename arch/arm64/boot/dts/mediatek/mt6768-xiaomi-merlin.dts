@@ -331,6 +331,14 @@
 };
 
 &pio {
+	backlight_pins: backlight-pins {
+		pins-en {
+			pinmux = <PINMUX_GPIO160__FUNC_GPIO160>;
+			output-low;
+			bias-pull-down;
+		};
+	};
+
 	bmi160_pins: bmi160-pins {
 		pins-int {
 			pinmux = <PINMUX_GPIO2__FUNC_GPIO2>;
@@ -364,6 +372,15 @@
 			pinmux = <PINMUX_GPIO152__FUNC_GPIO152>;
 			output-low;
 			bias-pull-down;
+		};
+	};
+
+	i2c0_pins: i2c0-pins {
+		pins-bus {
+			pinmux = <PINMUX_GPIO83__FUNC_SCL0>,
+				 <PINMUX_GPIO82__FUNC_SDA0>;
+			bias-pull-up;
+			input-enable;
 		};
 	};
 
