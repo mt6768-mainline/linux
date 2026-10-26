@@ -1401,6 +1401,10 @@ static int mt_rcv_event(struct snd_soc_dapm_widget *w,
 		/* Enable HS driver core circuits */
 		regmap_write(priv->regmap, MT6358_AUDDEC_ANA_CON6, 0x0093);
 
+		/* Set HS gain to normal gain */
+		regmap_write(priv->regmap, MT6358_ZCD_CON3,
+			     priv->ana_gain[AUDIO_ANALOG_VOLUME_HSOUTL]);
+
 		/* Enable AUD_CLK */
 		regmap_update_bits(priv->regmap, MT6358_AUDDEC_ANA_CON13,
 				   0x1, 0x1);
