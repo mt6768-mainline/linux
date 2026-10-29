@@ -8,6 +8,7 @@
 #include <dt-bindings/phy/phy.h>
 #include <dt-bindings/thermal/thermal.h>
 #include <dt-bindings/clock/mediatek,mt6768-clock.h>
+#include <dt-bindings/interconnect/mediatek,mt6768.h>
 #include <dt-bindings/mailbox/mediatek,mt6768-gce.h>
 #include <dt-bindings/memory/mediatek,mt6768-memory-port.h>
 #include <dt-bindings/pinctrl/mediatek,mt6768-pinfunc.h>
@@ -1435,6 +1436,35 @@
 			clocks = <&infracfg_ao CLK_INFRA_PMIC_AP>,
 				 <&infracfg_ao CLK_INFRA_PMIC_TMR>;
 			clock-names = "spi", "wrap";
+		};
+
+		dvfsrc: system-controller@10012000 {
+			compatible = "mediatek,mt6768-dvfsrc";
+			reg = <0 0x10012000 0 0x1000>;
+			clocks = <&infracfg_ao CLK_INFRA_DVFSRC>;
+
+			emi_icc: interconnect {
+				compatible = "mediatek,mt6768-emi";
+				#interconnect-cells = <1>;
+			};
+
+			regulators {
+				compatible = "mediatek,mt6768-dvfsrc-regulator";
+
+				dvfsrc_vcore: dvfsrc-vcore {
+					regulator-name = "dvfsrc-vcore";
+					regulator-min-microvolt = <650000>;
+					regulator-max-microvolt = <800000>;
+					regulator-always-on;
+				};
+
+				dvfsrc_vscp: dvfsrc-vscp {
+					regulator-name = "dvfsrc-vscp";
+					regulator-min-microvolt = <650000>;
+					regulator-max-microvolt = <800000>;
+					regulator-always-on;
+				};
+			};
 		};
 
 		timer@10017000 {
