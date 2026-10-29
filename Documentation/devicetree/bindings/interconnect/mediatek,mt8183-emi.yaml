@@ -38,6 +38,7 @@ description: |
 properties:
   compatible:
     enum:
+      - mediatek,mt6768-emi
       - mediatek,mt8183-emi
       - mediatek,mt8195-emi
       - mediatek,mt8196-emi
