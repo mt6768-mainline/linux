@@ -111,11 +111,25 @@
 
 #define U3P_U2PHYDTM1		0x06C
 #define P2C_RG_UART_EN			BIT(16)
+#define P2C_FORCE_VBUSVALID		BIT(13)
+#define P2C_FORCE_SESSEND		BIT(12)
+#define P2C_FORCE_BVALID		BIT(11)
+#define P2C_FORCE_AVALID		BIT(10)
 #define P2C_FORCE_IDDIG		BIT(9)
+#define P2C_FORCE_IDPULLUP		BIT(8)
 #define P2C_RG_VBUSVALID		BIT(5)
 #define P2C_RG_SESSEND			BIT(4)
+#define P2C_RG_BVALID			BIT(3)
 #define P2C_RG_AVALID			BIT(2)
 #define P2C_RG_IDDIG			BIT(1)
+#define P2C_RG_IDPULLUP			BIT(0)
+
+#define P2C_FORCE_ALL_MASK	(P2C_FORCE_IDPULLUP | P2C_FORCE_IDDIG | \
+				 P2C_FORCE_AVALID | P2C_FORCE_BVALID | \
+				 P2C_FORCE_SESSEND | P2C_FORCE_VBUSVALID)
+
+#define P2C_RG_COMMON_MASK	(P2C_RG_IDPULLUP | P2C_RG_AVALID | \
+				 P2C_RG_BVALID | P2C_RG_VBUSVALID)
 
 #define U3P_U2PHYBC12C		0x080
 #define P2C_RG_CHGDT_EN		BIT(0)
@@ -283,6 +297,8 @@ enum mtk_phy_version {
  * @sw_efuse_supported:       Switches off eFuse auto-load from PHY and applies values
  *                            read from different nvmem (usually different eFuse array)
  *                            that is pointed at in the device tree node for this PHY
+ * @sw_force_role:            Override PHY role on role switch event with expected flags.
+ *                            This is necessary on most mobile SoCs.
  * @slew_ref_clock_mhz:         Default reference clock (in MHz) for slew rate calibration
  * @slew_rate_coefficient:    Coefficient for slew rate calibration
  * @version:                  PHY IP Version
@@ -291,6 +307,7 @@ struct mtk_phy_pdata {
 	bool avoid_rx_sen_degradation;
 	bool sw_pll_48m_to_26m;
 	bool sw_efuse_supported;
+	bool sw_force_role;
 	u8 slew_ref_clock_mhz;
 	u8 slew_rate_coefficient;
 	enum mtk_phy_version version;
@@ -928,24 +945,33 @@ static void u2_phy_instance_set_mode(struct mtk_tphy *tphy,
 				     enum phy_mode mode)
 {
 	struct u2phy_banks *u2_banks = &instance->u2_banks;
-	u32 tmp;
+	void __iomem *com = u2_banks->com;
 
-	tmp = readl(u2_banks->com + U3P_U2PHYDTM1);
 	switch (mode) {
 	case PHY_MODE_USB_DEVICE:
-		tmp |= P2C_FORCE_IDDIG | P2C_RG_IDDIG;
+		if (tphy->pdata->sw_force_role) {
+			mtk_phy_clear_bits(com + U3P_U2PHYDTM1, P2C_RG_SESSEND);
+			mtk_phy_set_bits(com + U3P_U2PHYDTM1, P2C_FORCE_ALL_MASK |
+					 P2C_RG_COMMON_MASK);
+		}
+		mtk_phy_set_bits(com + U3P_U2PHYDTM1, P2C_FORCE_IDDIG | P2C_RG_IDDIG);
 		break;
 	case PHY_MODE_USB_HOST:
-		tmp |= P2C_FORCE_IDDIG;
-		tmp &= ~P2C_RG_IDDIG;
+		if (tphy->pdata->sw_force_role) {
+			mtk_phy_clear_bits(com + U3P_U2PHYDTM1, P2C_RG_SESSEND);
+			mtk_phy_set_bits(com + U3P_U2PHYDTM1,
+					 P2C_FORCE_ALL_MASK | P2C_RG_COMMON_MASK);
+		}
+		mtk_phy_set_bits(com + U3P_U2PHYDTM1, P2C_FORCE_IDDIG);
+		mtk_phy_clear_bits(com + U3P_U2PHYDTM1, P2C_RG_IDDIG);
 		break;
 	case PHY_MODE_USB_OTG:
-		tmp &= ~(P2C_FORCE_IDDIG | P2C_RG_IDDIG);
+		mtk_phy_clear_bits(com + U3P_U2PHYDTM1,
+				   P2C_FORCE_ALL_MASK | P2C_RG_IDDIG);
 		break;
 	default:
 		return;
 	}
-	writel(tmp, u2_banks->com + U3P_U2PHYDTM1);
 }
 
 static void pcie_phy_instance_init(struct mtk_tphy *tphy,
