@@ -16,6 +16,7 @@ maintainers:
 properties:
   compatible:
     enum:
+      - mediatek,mt6768-dvfsrc-regulator
       - mediatek,mt6873-dvfsrc-regulator
       - mediatek,mt6893-dvfsrc-regulator
       - mediatek,mt8183-dvfsrc-regulator
