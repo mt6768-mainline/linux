@@ -1564,6 +1564,14 @@ static const struct mtk_phy_pdata tphy_v3_pdata = {
 	.version = MTK_PHY_V3,
 };
 
+static const struct mtk_phy_pdata mt6768_pdata = {
+	.avoid_rx_sen_degradation = false,
+	.sw_force_role = true,
+	.slew_ref_clock_mhz = 26,
+	.slew_rate_coefficient = 28,
+	.version = MTK_PHY_V1,
+};
+
 static const struct mtk_phy_pdata mt8173_pdata = {
 	.avoid_rx_sen_degradation = true,
 	.slew_ref_clock_mhz = 26,
@@ -1580,6 +1588,7 @@ static const struct mtk_phy_pdata mt8195_pdata = {
 static const struct of_device_id mtk_tphy_id_table[] = {
 	{ .compatible = "mediatek,mt2701-u3phy", .data = &tphy_v1_pdata },
 	{ .compatible = "mediatek,mt2712-u3phy", .data = &tphy_v2_pdata },
+	{ .compatible = "mediatek,mt6768-tphy", .data = &mt6768_pdata },
 	{ .compatible = "mediatek,mt8173-u3phy", .data = &mt8173_pdata },
 	{ .compatible = "mediatek,mt8195-tphy", .data = &mt8195_pdata },
 	{ .compatible = "mediatek,generic-tphy-v1", .data = &tphy_v1_pdata },
