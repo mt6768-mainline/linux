@@ -8,8 +8,11 @@
 #include <linux/i2c.h>
 #include <linux/interrupt.h>
 #include <linux/module.h>
+#include <linux/of.h>
+#include <linux/property.h>
 #include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
+#include <linux/usb/role.h>
 #include <linux/usb/typec.h>
 
 #define WUSB3801_REG_DEVICE_ID		0x01
@@ -91,6 +94,7 @@ struct wusb3801 {
 	struct typec_port	*port;
 	struct regmap		*regmap;
 	struct regulator	*vbus_supply;
+	struct usb_role_switch	*role_sw;
 	unsigned int		partner_type;
 	enum typec_port_type	port_type;
 	enum typec_pwr_opmode	pwr_opmode;
@@ -250,17 +254,20 @@ static void wusb3801_hw_update(struct wusb3801 *wusb3801)
 
 	if (partner_type != wusb3801->partner_type) {
 		struct typec_partner_desc desc = {};
-		enum typec_data_role data_role;
 		enum typec_role pwr_role = wusb3801_get_default_role(wusb3801);
+		enum usb_role role = USB_ROLE_NONE;
+		enum typec_data_role data_role;
 
 		switch (partner_type) {
 		case WUSB3801_STAT_PARTNER_STANDBY:
 			break;
 		case WUSB3801_STAT_PARTNER_SNK:
 			pwr_role = TYPEC_SOURCE;
+			role = USB_ROLE_HOST;
 			break;
 		case WUSB3801_STAT_PARTNER_SRC:
 			pwr_role = TYPEC_SINK;
+			role = USB_ROLE_DEVICE;
 			break;
 		case WUSB3801_STAT_PARTNER_AUDIO:
 			desc.accessory = TYPEC_ACCESSORY_AUDIO;
@@ -281,6 +288,8 @@ static void wusb3801_hw_update(struct wusb3801 *wusb3801)
 				dev_err(dev, "Failed to register partner: %ld\n",
 					PTR_ERR(wusb3801->partner));
 		}
+
+		usb_role_switch_set_role(wusb3801->role_sw, role);
 
 		data_role = pwr_role == TYPEC_SOURCE ? TYPEC_HOST : TYPEC_DEVICE;
 		typec_set_data_role(port, data_role);
@@ -348,24 +357,31 @@ static int wusb3801_probe(struct i2c_client *client)
 	if (!connector)
 		return -ENODEV;
 
+	wusb3801->role_sw = fwnode_usb_role_switch_get(connector);
+	if (IS_ERR(wusb3801->role_sw)) {
+		ret = dev_err_probe(dev, PTR_ERR(wusb3801->role_sw),
+				    "Failed to get USB role switch\n");
+		goto err_put_connector;
+	}
+
 	ret = typec_get_fw_cap(&wusb3801->cap, connector);
 	if (ret)
-		goto err_put_connector;
+		goto err_put_role_sw;
 	wusb3801->port_type = wusb3801->cap.type;
 
 	ret = fwnode_property_read_string(connector, "typec-power-opmode", &cap_str);
 	if (ret)
-		goto err_put_connector;
+		goto err_put_role_sw;
 
 	ret = typec_find_pwr_opmode(cap_str);
 	if (ret < 0 || ret == TYPEC_PWR_MODE_PD)
-		goto err_put_connector;
+		goto err_put_role_sw;
 	wusb3801->pwr_opmode = ret;
 
 	/* Initialize the hardware with the devicetree settings. */
 	ret = wusb3801_hw_init(wusb3801);
 	if (ret)
-		goto err_put_connector;
+		goto err_put_role_sw;
 
 	wusb3801->cap.revision		= USB_TYPEC_REV_1_2;
 	wusb3801->cap.accessory[0]	= TYPEC_ACCESSORY_AUDIO;
@@ -377,8 +393,10 @@ static int wusb3801_probe(struct i2c_client *client)
 	wusb3801->port = typec_register_port(dev, &wusb3801->cap);
 	if (IS_ERR(wusb3801->port)) {
 		ret = PTR_ERR(wusb3801->port);
-		goto err_put_connector;
+		goto err_put_role_sw;
 	}
+
+	wusb3801->partner_type = ~0;
 
 	/* Initialize the port attributes from the hardware state. */
 	wusb3801_hw_update(wusb3801);
@@ -394,6 +412,8 @@ static int wusb3801_probe(struct i2c_client *client)
 
 err_unregister_port:
 	typec_unregister_port(wusb3801->port);
+err_put_role_sw:
+	usb_role_switch_put(wusb3801->role_sw);
 err_put_connector:
 	fwnode_handle_put(connector);
 
@@ -405,6 +425,9 @@ static void wusb3801_remove(struct i2c_client *client)
 	struct wusb3801 *wusb3801 = i2c_get_clientdata(client);
 
 	free_irq(client->irq, wusb3801);
+
+	usb_role_switch_set_role(wusb3801->role_sw, USB_ROLE_NONE);
+	usb_role_switch_put(wusb3801->role_sw);
 
 	if (wusb3801->partner)
 		typec_unregister_partner(wusb3801->partner);
