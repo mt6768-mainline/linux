@@ -255,10 +255,36 @@
 		pinctrl-0 = <&charger_pins>;
 		pinctrl-names = "default";
 
-		usb-vbus {
+		smb1351_otg_vbus: usb-vbus {
 			regulator-name = "smb1351-usb-otg-vbus";
 			regulator-min-microvolt = <5000000>;
 			regulator-max-microvolt = <5000000>;
+		};
+	};
+
+	typec@60 {
+		compatible = "willsemi,wusb3801";
+		reg = <0x60>;
+		interrupt-parent = <&pio>;
+		interrupts = <41 IRQ_TYPE_LEVEL_LOW>;
+		pinctrl-0 = <&typec_pins>;
+		pinctrl-names = "default";
+
+		connector {
+			compatible = "usb-c-connector";
+			label = "USB-C";
+			vbus-supply = <&smb1351_otg_vbus>;
+			power-role = "dual";
+			try-power-role = "sink";
+			data-role = "dual";
+			typec-power-opmode = "default";
+			pd-disable;
+
+			port {
+				typec_con_hs: endpoint {
+					remote-endpoint = <&musb_hs>;
+				};
+			};
 		};
 	};
 };
@@ -756,6 +782,14 @@
 		};
 	};
 
+	typec_pins: typec-pins {
+		pins-int {
+			pinmux = <PINMUX_GPIO41__FUNC_GPIO41>;
+			input-enable;
+			bias-pull-up;
+		};
+	};
+
 	uart0_pins: uart0-pins {
 		pins-rx {
 			pinmux = <PINMUX_GPIO95__FUNC_URXD0>;
@@ -838,6 +872,12 @@
 &usb {
 	dr_mode = "otg";
 	status = "okay";
+
+	port {
+		musb_hs: endpoint {
+			remote-endpoint = <&typec_con_hs>;
+		};
+	};
 };
 
 &u2phy {
