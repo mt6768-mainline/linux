@@ -103,6 +103,7 @@ config TYPEC_STUSB160X
 config TYPEC_WUSB3801
 	tristate "Willsemi WUSB3801 Type-C port controller driver"
 	depends on I2C
+	depends on USB_ROLE_SWITCH || !USB_ROLE_SWITCH
 	select REGMAP_I2C
 	help
 	  Say Y or M here if your system has a WUSB3801 Type-C port controller.
