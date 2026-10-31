@@ -67,9 +67,16 @@ properties:
     description: Connector for dual role switch
     type: object
 
+  port:
+    $ref: /schemas/graph.yaml#/properties/port
+    description:
+      Any connector to the data bus of this controller should be modelled
+      using the OF graph bindings specified, if the "usb-role-switch"
+      property is used.
+
 dependencies:
-  usb-role-switch: [ connector ]
   connector: [ usb-role-switch ]
+  port: [ usb-role-switch ]
 
 required:
   - compatible
