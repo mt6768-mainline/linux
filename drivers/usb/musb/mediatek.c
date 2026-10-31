@@ -80,6 +80,7 @@ static int mtk_otg_switch_set(struct mtk_glue *glue, enum usb_role role)
 		if (glue->role == USB_ROLE_NONE)
 			phy_power_on(glue->phy);
 
+		phy_set_mode(glue->phy, glue->phy_mode);
 		devctl |= MUSB_DEVCTL_SESSION;
 		musb_writeb(musb->mregs, MUSB_DEVCTL, devctl);
 		MUSB_HST_MODE(musb);
@@ -88,16 +89,18 @@ static int mtk_otg_switch_set(struct mtk_glue *glue, enum usb_role role)
 		musb->xceiv->otg->state = OTG_STATE_B_IDLE;
 		glue->phy_mode = PHY_MODE_USB_DEVICE;
 		new_role = USB_ROLE_DEVICE;
-		devctl &= ~MUSB_DEVCTL_SESSION;
-		musb_writeb(musb->mregs, MUSB_DEVCTL, devctl);
 		if (glue->role == USB_ROLE_NONE)
 			phy_power_on(glue->phy);
 
+		phy_set_mode(glue->phy, glue->phy_mode);
+		devctl &= ~MUSB_DEVCTL_SESSION;
+		musb_writeb(musb->mregs, MUSB_DEVCTL, devctl);
 		MUSB_DEV_MODE(musb);
 		break;
 	case USB_ROLE_NONE:
 		glue->phy_mode = PHY_MODE_USB_OTG;
 		new_role = USB_ROLE_NONE;
+		phy_set_mode(glue->phy, glue->phy_mode);
 		devctl &= ~MUSB_DEVCTL_SESSION;
 		musb_writeb(musb->mregs, MUSB_DEVCTL, devctl);
 		if (glue->role != USB_ROLE_NONE)
@@ -110,7 +113,6 @@ static int mtk_otg_switch_set(struct mtk_glue *glue, enum usb_role role)
 	}
 
 	glue->role = new_role;
-	phy_set_mode(glue->phy, glue->phy_mode);
 
 	return 0;
 }
