@@ -2412,6 +2412,18 @@
 			mediatek,smi = <&smi_common>;
 		};
 
+		jpgenc: jpeg-encoder@17030000 {
+			compatible = "mediatek,mt6768-jpgenc", "mediatek,mtk-jpgenc";
+			reg = <0 0x17030000 0 0x10000>;
+			interrupts = <GIC_SPI 245 IRQ_TYPE_LEVEL_LOW>;
+			clocks = <&vencsys CLK_VENC_JPGENC>;
+			clock-names = "jpgenc";
+			power-domains = <&spm MT6768_POWER_DOMAIN_VENC>;
+			iommus = <&iommu M4U_PORT_JPGENC_RDMA>,
+				 <&iommu M4U_PORT_JPGENC_BSDMA>;
+			mediatek,larb = <&larb4>;
+		};
+
 		camsys: syscon@1a000000 {
 			compatible = "mediatek,mt6768-camsys", "syscon";
 			reg = <0 0x1a000000 0 0x1000>;
