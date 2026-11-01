@@ -5,12 +5,15 @@
  * Copyright (c) 2025 Dinolek <git@dinolek.me>
  */
 
+#include <linux/delay.h>
+#include <linux/gpio/consumer.h>
 #include <linux/spi/spi.h>
 
 #include "novatek-nvt-ts.h"
 
 #define INFO_PARTITIONS_OFFSET	0x30
 
+#define NVT_TS_SPI_ENG_RST_ADDR	0x3fff6
 #define NVT_TS_SPI_TRANSFER_LEN	(63 * SZ_1K)
 #define NVT_TS_SPI_FORCE_PAGE	BIT(24)
 
@@ -43,10 +46,23 @@ struct firmware_header {
 	} overlay;
 };
 
-static int nvt_ts_spi_bootloader_reset(struct regmap *regmap,
-				       const struct nvt_ts_memory_map *mem_map)
+static int nvt_ts_spi_bootloader_reset(const struct nvt_ts_data *data)
 {
+	const struct nvt_ts_memory_map *mem_map = data->memory_map;
+	struct regmap *regmap = data->regmap;
 	int ret;
+
+	gpiod_set_value_cansleep(data->reset_gpio, 1);
+	fsleep(1000);
+
+	ret = regmap_write(regmap, NVT_TS_SPI_ENG_RST_ADDR, 0x5a);
+	if (ret)
+		return ret;
+
+	fsleep(1000);
+
+	gpiod_set_value_cansleep(data->reset_gpio, 0);
+	msleep(10);
 
 	ret = regmap_write(regmap, mem_map->software_reset_n8, 0x69);
 	if (ret)
@@ -207,7 +223,7 @@ static int nvt_ts_spi_upload_firmware(const struct nvt_ts_data *data,
 
 	hdr = (const struct firmware_header *)fw->data;
 
-	ret = nvt_ts_spi_bootloader_reset(data->regmap, mem_map);
+	ret = nvt_ts_spi_bootloader_reset(data);
 	if (ret) {
 		dev_err(dev, "failed to reset bootloader: %d\n", ret);
 		return ret;
