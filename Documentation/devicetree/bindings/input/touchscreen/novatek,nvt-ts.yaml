@@ -11,6 +11,7 @@ maintainers:
 
 allOf:
   - $ref: touchscreen.yaml#
+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
 
 properties:
   compatible:
@@ -29,6 +30,8 @@ properties:
 
   vcc-supply: true
   iovcc-supply: true
+
+  firmware-name: true
 
 required:
   - compatible
