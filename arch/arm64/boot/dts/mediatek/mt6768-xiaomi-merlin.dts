@@ -84,6 +84,17 @@
 	proc-supply = <&mt6358_vproc11_reg>;
 };
 
+&keyboard {
+	debounce-delay-ms = <32>;
+	pinctrl-0 = <&keyboard_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	keypad,num-rows = <1>;
+	keypad,num-columns = <1>;
+	linux,keymap = <MATRIX_KEY(0x00, 0x00, KEY_VOLUMEDOWN)>;
+};
+
 &mfg_async {
 	domain-supply = <&mt6358_vsram_gpu_reg>;
 };
@@ -147,6 +158,12 @@
 	status = "okay";
 };
 
+&mt6358keys {
+	home {
+		linux,keycodes = <KEY_VOLUMEUP>;
+	};
+};
+
 &mt6358_vdram2_reg {
 	regulator-always-on;
 };
@@ -160,6 +177,19 @@
 };
 
 &pio {
+	keyboard_pins: keyboard-pins {
+		pins-col {
+			pinmux = <PINMUX_GPIO93__FUNC_KPCOL0>;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+			input-enable;
+		};
+
+		pins-row {
+			pinmux = <PINMUX_GPIO92__FUNC_KPROW0>;
+			bias-pull-down = <MTK_PUPD_SET_R1R0_10>;
+		};
+	};
+
 	mmc0_default_pins: mmc0-default-pins {
 		pins-clk {
 			pinmux = <PINMUX_GPIO124__FUNC_MSDC0_CLK>;
