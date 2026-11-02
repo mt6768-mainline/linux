@@ -66,6 +66,16 @@ allOf:
       properties:
         compatible:
           contains:
+            const: mediatek,mt6768-audiosys
+    then:
+      properties:
+        audio-controller:
+          $ref: /schemas/sound/mediatek,mt6768-audio.yaml#
+
+  - if:
+      properties:
+        compatible:
+          contains:
             const: mediatek,mt8183-audiosys
     then:
       properties:
