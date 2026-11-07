@@ -18,6 +18,7 @@
 #include <linux/pm.h>
 #include <linux/property.h>
 #include <linux/regmap.h>
+#include <linux/regulator/consumer.h>
 #include <linux/sysfs.h>
 #include <linux/types.h>
 
@@ -744,6 +745,10 @@ static int stk3310_probe(struct i2c_client *client)
 
 	device_property_read_u32(&client->dev, "proximity-near-level",
 				 &data->ps_near_level);
+
+	ret = devm_regulator_get_enable(dev, "vdd");
+	if (ret)
+		return dev_err_probe(dev, ret, "failed to get vdd supply\n");
 
 	mutex_init(&data->lock);
 
