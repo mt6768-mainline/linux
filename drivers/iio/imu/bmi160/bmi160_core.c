@@ -94,7 +94,7 @@
 
 #define BMI160_ACCEL_PMU_MIN_USLEEP	3800
 #define BMI160_GYRO_PMU_MIN_USLEEP	80000
-#define BMI160_SOFTRESET_USLEEP		1000
+#define BMI160_SOFTRESET_USLEEP		50000
 
 #define BMI160_CHANNEL(_type, _axis, _index) {			\
 	.type = _type,						\
@@ -717,11 +717,8 @@ static int bmi160_chip_init(struct bmi160_data *data, bool use_spi)
 		return ret;
 	}
 
-	ret = regmap_write(data->regmap, BMI160_REG_CMD, BMI160_CMD_SOFTRESET);
-	if (ret)
-		goto disable_regulator;
-
-	usleep_range(BMI160_SOFTRESET_USLEEP, BMI160_SOFTRESET_USLEEP + 1);
+	/* Wait for power supplies to stabilize and POR to complete */
+	usleep_range(10000, 15000);
 
 	/*
 	 * CS rising edge is needed before starting SPI, so do a dummy read
@@ -731,6 +728,23 @@ static int bmi160_chip_init(struct bmi160_data *data, bool use_spi)
 		ret = regmap_read(data->regmap, BMI160_REG_DUMMY, &val);
 		if (ret)
 			goto disable_regulator;
+		usleep_range(1000, 2000);
+	}
+
+	ret = regmap_write(data->regmap, BMI160_REG_CMD, BMI160_CMD_SOFTRESET);
+	if (ret)
+		goto disable_regulator;
+
+	usleep_range(BMI160_SOFTRESET_USLEEP, BMI160_SOFTRESET_USLEEP + 1000);
+
+	/*
+	 * Soft reset switches interface back to I2C, perform dummy read again.
+	 */
+	if (use_spi) {
+		ret = regmap_read(data->regmap, BMI160_REG_DUMMY, &val);
+		if (ret)
+			goto disable_regulator;
+		usleep_range(1000, 2000);
 	}
 
 	ret = regmap_read(data->regmap, BMI160_REG_CHIP_ID, &val);
@@ -741,7 +755,7 @@ static int bmi160_chip_init(struct bmi160_data *data, bool use_spi)
 
 	ret = bmi160_check_chip_id(val);
 	if (ret)
-		dev_warn(dev, "Chip id not found: %x\n", val);
+		dev_warn(dev, "Chip id not found: 0x%02x\n", val);
 
 	ret = bmi160_set_mode(data, BMI160_ACCEL, true);
 	if (ret)
