@@ -60,6 +60,7 @@ properties:
           - const: mediatek,mt6765
       - items:
           - enum:
+              - realme,monet
               - xiaomi,merlin
           - const: mediatek,mt6768
       - items:
