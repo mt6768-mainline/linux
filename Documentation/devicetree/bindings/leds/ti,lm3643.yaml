@@ -21,6 +21,7 @@ description: |
 properties:
   compatible:
     enum:
+      - ocs,ocp81373
       - ti,lm3643
 
   reg:
