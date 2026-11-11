@@ -119,6 +119,7 @@
 
 #define LM3643_DEV_ID_MASK GENMASK(5, 3)
 #define LM3643_DEV_ID 0x00
+#define OCP81373_DEV_ID 0x38
 
 struct lm3643_chan {
 	u8 enable_bit;
@@ -821,6 +822,7 @@ static int lm3643_add_dmi_leds(struct device *dev)
 static int lm3643_probe(struct i2c_client *client)
 {
 	struct device *dev = &client->dev;
+	uintptr_t expected_dev_id = (uintptr_t)device_get_match_data(dev);
 	struct lm3643 *chip;
 	struct gpio_desc *hwen;
 	unsigned int dev_id;
@@ -862,9 +864,10 @@ static int lm3643_probe(struct i2c_client *client)
 		return dev_err_probe(dev, ret, "failed to read device ID\n");
 
 	dev_id &= LM3643_DEV_ID_MASK;
-	if (dev_id != LM3643_DEV_ID)
-		return dev_err_probe(dev, -ENODEV, "wrong chip id 0x%02x (expected 0x%02x)\n",
-					 dev_id, LM3643_DEV_ID);
+	if (dev_id != expected_dev_id)
+		return dev_err_probe(dev, -ENODEV,
+				     "wrong chip id 0x%02x (expected 0x%02lx)\n",
+				     dev_id, expected_dev_id);
 
 	ret = devm_mutex_init(dev, &chip->lock);
 	if (ret)
@@ -903,13 +906,14 @@ static int lm3643_probe(struct i2c_client *client)
 }
 
 static const struct acpi_device_id lm3643_acpi_leds_match[] = {
-	{ "TXNW3643" },
+	{ "TXNW3643", (kernel_ulong_t)LM3643_DEV_ID },
 	{ },
 };
 MODULE_DEVICE_TABLE(acpi, lm3643_acpi_leds_match);
 
 static const struct of_device_id lm3643_of_leds_match[] = {
-	{ .compatible = "ti,lm3643" },
+	{ .compatible = "ocs,ocp81373", .data = (void *)OCP81373_DEV_ID },
+	{ .compatible = "ti,lm3643", .data = (void *)LM3643_DEV_ID },
 	{ },
 };
 MODULE_DEVICE_TABLE(of, lm3643_of_leds_match);
