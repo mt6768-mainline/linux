@@ -29,6 +29,10 @@ properties:
               - sensortek,stk3337
               - sensortek,stk36c61
           - const: sensortek,stk3310
+      - items:
+          - const: sensortek,stk3331
+          - const: sensortek,stk3337
+          - const: sensortek,stk3310
 
   reg:
     maxItems: 1
