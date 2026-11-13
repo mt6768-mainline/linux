@@ -37,6 +37,7 @@ static int kx022a_spi_probe(struct spi_device *spi)
 
 static const struct spi_device_id kx022a_id[] = {
 	{ .name = "kx022a", .driver_data = (kernel_ulong_t)&kx022a_chip_info },
+	{ .name = "kx122-1037", .driver_data = (kernel_ulong_t)&kx122_chip_info },
 	{ .name = "kx132-1211", .driver_data = (kernel_ulong_t)&kx132_chip_info },
 	{ .name = "kx134-1211", .driver_data = (kernel_ulong_t)&kx134_chip_info },
 	{ .name = "kx132acr-lbz", .driver_data = (kernel_ulong_t)&kx132acr_chip_info },
@@ -47,6 +48,7 @@ MODULE_DEVICE_TABLE(spi, kx022a_id);
 
 static const struct of_device_id kx022a_of_match[] = {
 	{ .compatible = "kionix,kx022a", .data = &kx022a_chip_info },
+	{ .compatible = "kionix,kx122-1037", .data = &kx122_chip_info },
 	{ .compatible = "kionix,kx132-1211", .data = &kx132_chip_info },
 	{ .compatible = "kionix,kx134-1211", .data = &kx134_chip_info },
 	{ .compatible = "rohm,kx132acr-lbz", .data = &kx132acr_chip_info },

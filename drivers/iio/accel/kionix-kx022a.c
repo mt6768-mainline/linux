@@ -417,6 +417,13 @@ static const int kx022a_scale_table[][2] = {
 	{ 0, 4788403 },
 };
 
+/* KX122 ranges are (+/-) 2, 4, 8 G */
+static const int kx122_scale_table[][2] = {
+	{ 0, 598550 },
+	{ 0, 1197101 },
+	{ 0, 2394202 },
+};
+
 /* KX134ACR-LBZ ranges are (+/-) 8, 16, 32, 64 G */
 static const int kx134acr_lbz_scale_table[][2] = {
 	{ 0, 2394202 },
@@ -1213,6 +1220,34 @@ const struct kx022a_chip_info kx022a_chip_info = {
 	.get_fifo_bytes_available	= kx022a_get_fifo_bytes_available,
 };
 EXPORT_SYMBOL_NS_GPL(kx022a_chip_info, "IIO_KX022A");
+
+const struct kx022a_chip_info kx122_chip_info = {
+	.name				= "kx122-1037",
+	.regmap_config			= &kx022a_regmap_config,
+	.channels			= kx022a_channels,
+	.num_channels			= ARRAY_SIZE(kx022a_channels),
+	.scale_table			= kx122_scale_table,
+	.scale_table_size		= ARRAY_SIZE(kx122_scale_table) *
+					  ARRAY_SIZE(kx122_scale_table[0]),
+	.fifo_length			= KX022A_FIFO_LENGTH,
+	.who				= KX022A_REG_WHO,
+	.id				= KX122_ID,
+	.cntl				= KX022A_REG_CNTL,
+	.cntl2				= KX022A_REG_CNTL2,
+	.odcntl				= KX022A_REG_ODCNTL,
+	.buf_cntl1			= KX022A_REG_BUF_CNTL1,
+	.buf_cntl2			= KX022A_REG_BUF_CNTL2,
+	.buf_clear			= KX022A_REG_BUF_CLEAR,
+	.buf_status1			= KX022A_REG_BUF_STATUS_1,
+	.buf_read			= KX022A_REG_BUF_READ,
+	.inc1				= KX022A_REG_INC1,
+	.inc4				= KX022A_REG_INC4,
+	.inc5				= KX022A_REG_INC5,
+	.inc6				= KX022A_REG_INC6,
+	.xout_l				= KX022A_REG_XOUT_L,
+	.get_fifo_bytes_available	= kx022a_get_fifo_bytes_available,
+};
+EXPORT_SYMBOL_NS_GPL(kx122_chip_info, "IIO_KX022A");
 
 const struct kx022a_chip_info kx132_chip_info = {
 	.name			  = "kx132-1211",
