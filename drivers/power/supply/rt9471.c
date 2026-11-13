@@ -951,8 +951,8 @@ static int rt9471_probe(struct i2c_client *i2c)
 	if (ret)
 		return ret;
 
-	/* After IRQs are all initialized, enable port detection by default */
-	return regmap_field_write(chip->rm_fields[F_BC12_EN], 1);
+	/* Do not enable BC1.2 port detection by default, as it interferes with USB DP/DM */
+	return 0;
 }
 
 static void rt9471_shutdown(struct i2c_client *i2c)
