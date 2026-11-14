@@ -1531,6 +1531,23 @@
 			clock-names = "gce";
 		};
 
+		apdma: dma-controller@11000980 {
+			compatible = "mediatek,mt6768-uart-dma",
+				     "mediatek,mt6835-uart-dma";
+			reg = <0 0x11000980 0 0x80>,
+			      <0 0x11000a00 0 0x80>,
+			      <0 0x11000a80 0 0x80>,
+			      <0 0x11000b00 0 0x80>;
+			interrupts = <GIC_SPI 102 IRQ_TYPE_LEVEL_LOW>,
+				     <GIC_SPI 103 IRQ_TYPE_LEVEL_LOW>,
+				     <GIC_SPI 104 IRQ_TYPE_LEVEL_LOW>,
+				     <GIC_SPI 114 IRQ_TYPE_LEVEL_LOW>;
+			clocks = <&infracfg_ao CLK_INFRA_AP_DMA>;
+			clock-names = "apdma";
+			#dma-cells = <1>;
+			dma-requests = <4>;
+		};
+
 		auxadc: adc@11001000 {
 			compatible = "mediatek,mt6768-auxadc", "mediatek,mt6765-auxadc";
 			reg = <0 0x11001000 0 0x1000>;
@@ -1547,6 +1564,8 @@
 			interrupts = <GIC_SPI 112 IRQ_TYPE_LEVEL_LOW>;
 			clocks = <&clk26m>, <&infracfg_ao CLK_INFRA_UART0>;
 			clock-names = "baud", "bus";
+			dmas = <&apdma 0>, <&apdma 1>;
+			dma-names = "tx", "rx";
 
 			status = "disabled";
 		};
@@ -1557,6 +1576,8 @@
 			interrupts = <GIC_SPI 113 IRQ_TYPE_LEVEL_LOW>;
 			clocks = <&clk26m>, <&infracfg_ao CLK_INFRA_UART1>;
 			clock-names = "baud", "bus";
+			dmas = <&apdma 2>, <&apdma 3>;
+			dma-names = "tx", "rx";
 
 			status = "disabled";
 		};
