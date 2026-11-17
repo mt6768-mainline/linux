@@ -1170,10 +1170,13 @@ void musb_ep_restart(struct musb *musb, struct musb_request *req)
 	if (req->tx) {
 		txstate(musb, req);
 	} else {
+		/*
+		 * Defer draining an already-ready Rx FIFO packet instead of
+		 * flushing it or completing usb_ep_queue() synchronously.
+		 */
 		csr = musb_readw(epio, MUSB_RXCSR);
-		csr |= MUSB_RXCSR_FLUSHFIFO | MUSB_RXCSR_P_WZC_BITS;
-		musb_writew(epio, MUSB_RXCSR, csr);
-		musb_writew(epio, MUSB_RXCSR, csr);
+		if (csr & MUSB_RXCSR_RXPKTRDY)
+			schedule_work(&req->ep->rx_work);
 	}
 }
 
@@ -1688,6 +1691,29 @@ static const struct usb_gadget_ops musb_gadget_operations = {
  * all peripheral ports are external...
  */
 
+/*
+ * Drain an Rx FIFO packet that became ready while req_list was empty without
+ * invoking req->complete() synchronously inside usb_ep_queue().
+ */
+static void musb_ep_rx_work(struct work_struct *work)
+{
+	struct musb_ep *musb_ep = container_of(work, struct musb_ep, rx_work);
+	struct musb *musb = musb_ep->musb;
+	unsigned long flags;
+
+	if (pm_runtime_resume_and_get(musb->controller) < 0)
+		return;
+
+	local_bh_disable();
+	spin_lock_irqsave(&musb->lock, flags);
+	if (musb_ep->desc && !musb_ep->is_in && !musb_ep->busy)
+		musb_g_rx(musb, musb_ep->current_epnum);
+	spin_unlock_irqrestore(&musb->lock, flags);
+	local_bh_enable();
+
+	pm_runtime_put_autosuspend(musb->controller);
+}
+
 static void
 init_peripheral_ep(struct musb *musb, struct musb_ep *ep, u8 epnum, int is_in)
 {
@@ -1701,6 +1727,7 @@ init_peripheral_ep(struct musb *musb, struct musb_ep *ep, u8 epnum, int is_in)
 	ep->is_in = is_in;
 
 	INIT_LIST_HEAD(&ep->req_list);
+	INIT_WORK(&ep->rx_work, musb_ep_rx_work);
 
 	sprintf(ep->name, "ep%d%s", epnum,
 			(!epnum || hw_ep->is_shared_fifo) ? "" : (
@@ -1805,11 +1832,27 @@ err:
 
 void musb_gadget_cleanup(struct musb *musb)
 {
+	u8 epnum;
+	struct musb_hw_ep *hw_ep;
+
 	if (musb->port_mode == MUSB_HOST)
 		return;
 
 	cancel_delayed_work_sync(&musb->gadget_work);
 	usb_del_gadget_udc(&musb->g);
+
+	for (epnum = 0, hw_ep = musb->endpoints;
+			epnum < musb->nr_endpoints;
+			epnum++, hw_ep++) {
+		if (hw_ep->is_shared_fifo) {
+			cancel_work_sync(&hw_ep->ep_in.rx_work);
+		} else {
+			if (hw_ep->max_packet_sz_tx)
+				cancel_work_sync(&hw_ep->ep_in.rx_work);
+			if (hw_ep->max_packet_sz_rx)
+				cancel_work_sync(&hw_ep->ep_out.rx_work);
+		}
+	}
 }
 
 /*

@@ -11,6 +11,7 @@
 #define __MUSB_GADGET_H
 
 #include <linux/list.h>
+#include <linux/workqueue.h>
 
 #if IS_ENABLED(CONFIG_USB_MUSB_GADGET) || IS_ENABLED(CONFIG_USB_MUSB_DUAL_ROLE)
 extern irqreturn_t musb_g_ep0_irq(struct musb *);
@@ -87,6 +88,7 @@ struct musb_ep {
 
 	/* later things are modified based on usage */
 	struct list_head		req_list;
+	struct work_struct		rx_work;
 
 	u8				wedged;
 
