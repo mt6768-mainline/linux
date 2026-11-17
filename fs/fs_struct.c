@@ -192,9 +192,12 @@ static inline void validate_fs_switch(struct fs_struct *old_fs)
 	/* @old_fs may be dangling but for comparison it's fine */
 	if (old_fs != userspace_init_fs)
 		return;
+	/*
+	 * Android init spawns property_service threads sharing userspace_init_fs
+	 * before SetupMountNamespaces() calls unshare(CLONE_NEWNS), so resetting
+	 * userspace_init_fs to nullfs strands sibling threads on an empty root.
+	 */
 	pr_warn("VFS: Pid 1 stopped sharing filesystem state\n");
-	set_fs_root(userspace_init_fs, &init_fs.root);
-	set_fs_pwd(userspace_init_fs, &init_fs.root);
 }
 
 struct fs_struct *switch_fs_struct(struct fs_struct *new_fs)
